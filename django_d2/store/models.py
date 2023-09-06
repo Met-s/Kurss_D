@@ -18,7 +18,13 @@ class Order(models.Model):
         if self.complete:  # если завершён возвращаем разность объектов
             return (self.time_out - self.time_in).total_seconds() // 60
         else:
-            return (datetime.now(timezone.utc) - self.time_in).total_seconds() // 60
+            return ((datetime.now(timezone.utc) - self.time_in).total_seconds()
+                    // 60)
+
+    def finish_order(self):
+        self.time_out = datetime.now()
+        self.complete = True
+        self.save()
 
 
 class Product(models.Model):
