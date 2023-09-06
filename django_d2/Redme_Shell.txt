@@ -1,0 +1,48 @@
+py manage.py shell
+
+from store.models import *
+
+cap_big = Product.objects.create(name='Монитор', price=9999.0)
+product_1 = Product.objects.create(name='Витая пара (3 м.)', price=993.0,
+    slug='vit3m')
+product_2 = Product.objects.create(name='Клавиатура', price=1060.0, slug='klav')
+product_3 = Product.objects.create(name='Витая пара 1 м.', price=109.0,
+    slug='vit1m')
+
+cashier1 = Staff.objects.create(full_name='Иванов Иван Иванович',
+    position=Staff.cashier, labor_contract=1754)
+cashier2 = Staff.objects.create(full_name='Петров Пётр Петрович',
+    position=Staff.cashier, labor_contract=4355)
+direct = Staff.objects.create(full_name='Максимов Максим Максимович',
+    position=Staff.director, labor_contract=1254)
+
+person = Staff.objects.get(labor_contract=1254)
+
+>>> person.full_name
+'Максимов Максим Максимович'
+
+ p = Staff.objects.get(pk=2)
+>>> p
+<Staff: Staff object (2)>
+>>> p.full_name
+'Петров Пётр Петрович'
+
+c = Staff.objects.filter(position=Staff.cashier)
+>>> for i in c:
+...     i.full_name
+...
+'Иванов Иван Иванович'
+'Петров Пётр Петрович'
+
+c.values("full_name", "labor_contract")
+<QuerySet [{'full_name': 'Иванов Иван Иванович', 'labor_contract': 1754},
+{'full_name': 'Петров Пётр Петрович', 'labor_contract': 4355}]>
+
+# Дописав к названию поля __gt в аргументе метода, получим все значения которые
+больше (greater than) заданного числа
+
+ Product.objects.filter(price__gt=90.0).values("name")
+<QuerySet [{'name': 'Монитор'}, {'name': 'Витая пара (3 м.)'}, {'name': 'Клавиатура'}, {'n
+ame': 'Витая пара 1 м.'}]>
+
+
