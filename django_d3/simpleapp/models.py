@@ -6,3 +6,5 @@ from django.core.validators import MinValueValidator
 class Product(models.Model):
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField()
+
+
