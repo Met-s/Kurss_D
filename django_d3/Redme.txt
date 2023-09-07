@@ -72,8 +72,34 @@ urlpatterns = [
     # подключались к главному приложению с префиксом products/.
     path('products/', include('simpleapp.urls')),
 ]
-
 ------------------------------------
+Настроил settings.py
+
+'django.contrib.sites',
+'django.contrib.flatpages',
+'simpleapp'
+
+SITE_ID = 1
+
+'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
+
+'DIRS': [os.path.join(BASE_DIR, 'templates')],
+или
+'DIRS': [BASE_DIR / 'templates'],
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static"
+]
+---------------------------------------
+Применил миграции
+
+py manage.py makemigrations
+py manage.py migrate
+
+Создал супер юзера
+
+py manage.py createsuperuser
+---------------------------------------
 Сделаем так, чтобы для работы с товарами была отдельная ссылка. Например,
 просмотр всех товаров был доступен по ссылке: products/,
 создание товара: product/create
