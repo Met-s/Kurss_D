@@ -104,3 +104,4 @@ py manage.py createsuperuser
 просмотр всех товаров был доступен по ссылке: products/,
 создание товара: product/create
 
+
