@@ -41,6 +41,40 @@ class ProductsList(ListView):
 Для этого необходимо настроить пути в файле urls.py. При выполнении
 инициализации нового приложения Django не создавал этот файл в нашей директории,
 поэтому мы создадим его сами.
-
 simpleapp/urls.py
-from
+
+from django.urls import path
+from .views import ProductsList
+
+urlpatterns = [
+    # path - означает ПУТЬ
+    # В данном случае путь ко всем товарам останется пустым
+    # Т.к. объявленное представление является классом, а Django ожидает
+    # функцию, надо представить этот класс в виде view.
+    # Для этого вызываем метод as_view.
+    path('', ProductsList.as_view()),
+]
+Задали ПУТЬ к нашему представлению
+-----------------------------------
+Вывод из БД. Для этого в главном файле urls.py в котором подключали flatpages
+нужно сделать так, чтобы он автоматически включал все наши адреса из приложения
+ и добавлял к нему префикс products.
+
+django_d3/urls.py
+
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('pages/', include('django.contrib.flatpages.urls')),
+    # Делаем так, чтобы все адреса из нашего приложения (simpleapp/urls.py)
+    # подключались к главному приложению с префиксом products/.
+    path('products/', include('simpleapp.urls')),
+]
+
+------------------------------------
+Сделаем так, чтобы для работы с товарами была отдельная ссылка. Например,
+просмотр всех товаров был доступен по ссылке: products/,
+создание товара: product/create
+
