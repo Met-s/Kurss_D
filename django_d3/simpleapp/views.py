@@ -12,8 +12,8 @@ class ProductsList(ListView):
     # Поле, которое будет использоваться для сортировки объектов
     # ordering = 'name'
     queryset = Product.objects.filter(
-        price__lt=500
-    )
+        price__lt=900
+    ).order_by('-name')
     # Указываем имя шаблона, в котором будут все инструкции о том, как именно
     # пользователю должны быть показаны наши объекты
     template_name = 'products.html'
