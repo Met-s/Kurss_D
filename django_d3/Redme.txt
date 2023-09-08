@@ -100,6 +100,50 @@ py manage.py migrate
 
 py manage.py createsuperuser
 ---------------------------------------
+Добавляем шаблон default.html
+
+templates/flatpages/default.html
+---------------------------------------
+Добавил папку static и изменил шаблон в default.html
+---------------------------------------
+добавление панели в админке: для зарегистрированных пользователей
+создадим файл django_d3/flatpages/admin.py
+
+from django.contrib import admin
+from django.contrib.flatpages.admin import FlatPageAdmin
+from django.contrib.flatpages.models import FlatPage
+from django.utils.translation import gettext_lazy as _
+
+# Define a new FlatPageAdmin
+class FlatPageAdmin(FlatPageAdmin):
+    fieldsets = (
+        (None, {'fields': ('url', 'title', 'content', 'sites')}),
+        (_('Advanced options'), {
+        'classes': ('collapse',),
+        'fields': (
+            'enable_comments',
+            'registration_required',
+            'template_name',
+         ),
+        }),
+    )
+# Re-register FlatPageAdmin
+admin.site.unregister(FlatPage)
+admin.site.register(FlatPage, FlatPageAdmin)
+
+Нужно зарегистрировать новое приложение Flatpages в настройках settings.py
+'fpages'
+---------------------------------------
+
+---------------------------------------
+
+---------------------------------------
+
+---------------------------------------
+
+---------------------------------------
+
+---------------------------------------
 Сделаем так, чтобы для работы с товарами была отдельная ссылка. Например,
 просмотр всех товаров был доступен по ссылке: products/,
 создание товара: product/create
