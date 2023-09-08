@@ -5,11 +5,15 @@ from django.shortcuts import render
 from django.views.generic import ListView
 from .models import Product
 
+
 class ProductsList(ListView):
     # Указываем модель объекты которой будем выводить
-    model = Product
+    # model = Product
     # Поле, которое будет использоваться для сортировки объектов
-    ordering = 'name'
+    # ordering = 'name'
+    queryset = Product.objects.filter(
+        price__lt=500
+    )
     # Указываем имя шаблона, в котором будут все инструкции о том, как именно
     # пользователю должны быть показаны наши объекты
     template_name = 'products.html'
