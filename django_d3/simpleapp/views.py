@@ -8,15 +8,24 @@ from .models import Product
 
 class ProductsList(ListView):
     # Указываем модель объекты которой будем выводить
-    # model = Product
+
+    model = Product
+
     # Поле, которое будет использоваться для сортировки объектов
-    # ordering = 'name'
-    queryset = Product.objects.filter(
-        price__lt=900
-    ).order_by('-name')
+
+    ordering = 'name'
+
+    # queryset = Product.objects.filter(
+    #     price__lt=900
+    # ).order_by('-name')
+
     # Указываем имя шаблона, в котором будут все инструкции о том, как именно
     # пользователю должны быть показаны наши объекты
-    template_name = 'products.html'
+
+    template_name = 'products.html'  # шаблон, который будет ипользоваться
+
     # Это имя списка, в котором будут лежать все объекты.
     # Его надо указать, чтобы обратиться к списку объектов в html-шаблоне.
-    context_object_name = 'products'
+
+    context_object_name = 'products'  # Переменная в шаблоне в которую
+    # передаётся вся информация из модели
