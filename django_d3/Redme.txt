@@ -210,7 +210,37 @@ django_d3/templates/product.html
 {% endif %}
 
 ---------------------------------------
-
+Изменил templates/products.html
+Создал таблицу:
+{% block content %}
+    <hr>
+    <h3>products.html</h3>
+    <hr>
+    <h1>Все товары</h1>
+        {% if products %}
+            <table>
+                <tr>
+                    <td>
+                        Название
+                    </td>
+                    <td>
+                        Описание
+                    </td>
+                    <td>
+                        Категория
+                    </td>
+                    <td>
+                        Цена
+                    </td>
+                    <td>
+                        Количество
+                    </td>
+                </tr>
+            </table>
+        {% else %}
+            <h2>Товаров нет!</h2>
+        {% endif %}
+{% endblock content %}
 ---------------------------------------
 
 ---------------------------------------
