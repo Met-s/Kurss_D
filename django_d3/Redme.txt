@@ -261,7 +261,14 @@ django_d3/templates/product.html
         {% endif %}
 {% endblock content %}
 ---------------------------------------
-
+Фильтр в шаблоне: отрезает 15 символов и добавляет ...
+<tr>
+    <td>{{ product.name }}</td>
+    <td>{{ product.description|truncatechars:15 }}</td>
+    <td>{{ product.category.name }}</td>
+    <td>{{ product.price }}</td>
+    <td>{{ product.quantity }}</td>
+</tr>
 ---------------------------------------
 
 ---------------------------------------
