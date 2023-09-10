@@ -281,8 +281,10 @@ django_d3/templates/product.html
 доступны в шаблоне.
 
 from datetime import datetime
+class ProductsList(ListView):
 # Метод get_context_data позволяет изменить набор данных,
     # который будет передан в шаблон
+
     def get_context_data(self, **kwargs):
         # С помощью super() обращаемся к родительским классам и вызываем у них
         # метод get_context_data с теми же аргументами.
@@ -333,8 +335,39 @@ from datetime import datetime
         {% endif %}
 {% endblock content %}
 ---------------------------------------
+Сообщение о распродаже:  next_sale взята из
+def get_context_data(self, **kwargs): файла views.py
 
+products.html
+
+{% block content %}
+    <hr>
+    <h3>products.html</h3>
+    <hr>
+    <h1>Все товары</h1>
+    <h3>{{ time_now|date:'M d Y'}}</h3>
+<!--        Если в переменной next_sale будет NONE,
+то выведется указанный в переменной текст-->
+        <h3> {{ next_sale|default_if_none:"Чуть позже сообщим о распродаже!" }}</h3>
+    <hr>
+        {% if products %}
 ---------------------------------------
+При замене значения next_sale в представлении views.py на какую-нибудь строку,
+будет выведено её содержимое.
+
+def get_context_data(self, **kwargs):
+        # С помощью super() обращаемся к родительским классам и вызываем у них
+        # метод get_context_data с теми же аргументами.
+        # В ответе должны получить словарь.
+        context = super().get_context_data(**kwargs)
+        # К словарю добавим текущую дату в ключ 'time_now'
+        context['time_now'] = datetime.utcnow()
+        # Добавим ещё одну пустую переменную,
+        # чтобы на её примере рассмотреть работу ещё одного фильтра.
+
+        context['next_sale'] = "Распродажа в среду!"
+
+        return context
 
 ---------------------------------------
 
