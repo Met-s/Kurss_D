@@ -13,4 +13,4 @@ def currency(value):
 
     """
     # Возвращаемое функцией значение подставится в шаблон.
-    return f'{value} P'
+    return f'{value} руб.'
