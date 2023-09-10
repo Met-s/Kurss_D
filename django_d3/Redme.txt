@@ -409,7 +409,34 @@ def currency(value):
 Сделать это можно с помощью указания тега {% load custom_filters %}
 Где custom_filters - это название файла с нашим фильтром.
 ---------------------------------------
+Добавили словарь со списком кодов валют и их символов, используем в функции.
+Мы не увидим, ни каких ошибок насчёт того, что аргумент у фильтра есть, а мы
+его не используем. Потому что указали значение по умолчанию code='rub'.
 
+CURRENCIES_SYMBOLS = {
+    'rub': 'руб',
+    'usd': '$',
+}
+
+@register.filter()
+def currency(value, code='rub'):
+    """
+    value: значение, к которому нуо применить фильтр
+
+    """
+    postfix = CURRENCIES_SYMBOLS[code]
+    # Возвращаемое функцией значение подставится в шаблон.
+    return f'{value} {postfix}'
+---------------
+Укажем в шаблоне products.html "usd"
+
+<tr>
+    <td>{{ product.name }}</td>
+    <td>{{ product.description|truncatewords:2 }}</td>
+    <td>{{ product.category.name }}</td>
+    <td>{{ product.price|currency:"usd" }}</td>
+    <td>{{ product.quantity }}</td>
+</tr>
 ---------------------------------------
 
 ---------------------------------------

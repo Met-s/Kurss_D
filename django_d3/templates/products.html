@@ -29,7 +29,7 @@
                     <td>{{ product.name }}</td>
                     <td>{{ product.description|truncatewords:2 }}</td>
                     <td>{{ product.category.name }}</td>
-                    <td>{{ product.price|currency }}</td>
+                    <td>{{ product.price|currency:"usd" }}</td>
                     <td>{{ product.quantity }}</td>
                 </tr>
                 {% endfor %}
