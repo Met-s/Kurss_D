@@ -4,7 +4,7 @@ from datetime import datetime
 # что в этом представлении мы будем выводить список объектов из БД
 from django.views.generic import ListView, DetailView
 from .models import Product
-
+from pprint import pprint
 
 class ProductsList(ListView):
     # Указываем модель объекты которой будем выводить
@@ -42,6 +42,7 @@ class ProductsList(ListView):
         # Добавим ещё одну пустую переменную,
         # чтобы на её примере рассмотреть работу ещё одного фильтра.
         context['next_sale'] = "Распродажа в среду!"
+        pprint(id(context['object_list']))
         return context
 
 
