@@ -4,6 +4,8 @@ from datetime import datetime
 # что в этом представлении мы будем выводить список объектов из БД
 from django.views.generic import ListView, DetailView
 from .models import Product
+# -----------------
+from django.http import HttpResponse
 
 
 class ProductsList(ListView):
@@ -45,6 +47,19 @@ class ProductsList(ListView):
         return context
 
 
+def multiply(request):
+    number = request.GET.get('number')
+    multiplier = request.GET.get('multiplier')
+
+    try:
+        result = int(number) * int(multiplier)
+        html = f"<html><body><h1>{number}*{multiplier}={result}</h1></body></html>"
+    except (ValueError, TypeError):
+        html = f"<html><body><h1>Invalid input.</h1></body></html>"
+
+    return HttpResponse(html)
+
+
 class ProductDetail(DetailView):
     # Модель всё та же, но мы хотим получить информацию по отдельному товару
     model = Product
@@ -52,4 +67,6 @@ class ProductDetail(DetailView):
     template_name = 'product.html'
     # Название в котором будет выбранный пользователем продукт
     context_object_name = 'product'
+
+
 
