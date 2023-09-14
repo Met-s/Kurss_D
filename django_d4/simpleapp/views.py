@@ -6,6 +6,7 @@ from django.views.generic import ListView, DetailView
 from .models import Product
 # -----------------
 from django.http import HttpResponse
+from .filters import ProductFilter
 
 
 class ProductsList(ListView):
@@ -36,6 +37,19 @@ class ProductsList(ListView):
     # который будет передан в шаблон
     paginate_by = 2  # вот так можно указать количество записей на странице
 
+    # Переопределяем функцию получения списка товаров
+    def get_queryset(self):
+        # получаем обычный запрос
+        queryset = super().get_queryset()
+        # используем наш класс фильтрации
+        # self.request.GET содержит объект QueryDict, который рассматривали
+        # в этом юните ранее.
+        # Сохраняем нашу фильтрацию в объекте класса, чтобы потом добавить в
+        # контекст и использовать в шаблоне
+        self.filterset = ProductFilter(self.request.GET, queryset)
+        # возвращаем из функции отфильтрованный список товаров
+        return self.filterset.qs
+
     def get_context_data(self, **kwargs):
         # С помощью super() обращаемся к родительским классам и вызываем у них
         # метод get_context_data с теми же аргументами.
@@ -45,7 +59,10 @@ class ProductsList(ListView):
         # context['time_now'] = datetime.utcnow()
         # Добавим ещё одну пустую переменную,
         # чтобы на её примере рассмотреть работу ещё одного фильтра.
-        context['next_sale'] = "Распродажа в среду!"
+        context['filterset'] = self.filterset
+
+        # context['next_sale'] = "Распродажа в среду!"
+
         return context
 
 
