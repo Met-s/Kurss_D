@@ -810,7 +810,76 @@ products.html
         {# Добавим кнопку отправки данных формы #}
         <input type="submit" value="Найти" />
     </form>
+-------------------
+чтобы фильтрация не пропадала на других страницах
 
+custom_tags.py
+
+@register.simple_tag(takes_context=True)
+def url_replace(context, **kwargs):
+    d = context['request'].GET.copy()
+    for k, v in kwargs.items():
+        d[k] = v
+    return d.urlencode()
+
+Параметр декоратора takes_context=True сообщает Django, что для работы тега
+требуется передать контекст.
+Именно тот контекст который редактировали.
+context['request'].GET.copy() на позволяет скопировать все параметры текущего запроса.
+Далее по указанным полям устанавливаем новые значения, которые нам передали
+при использовании тега.
+В конце кодируем параметры в формат, который может быть указан в строке браузера.
+Не каждый символ разрешается использовать в пути и параметрах запроса.
+Подробнее здесь: https://en.wikipedia.org/wiki/Percent-encoding
+-------------------
+Тег сделали, осталось применить его в шаблоне.
+Для этого добавим в ссылки пагинации.
+
+products.html
+
+{% endif %}
+        {# Добавим пагинацию на страницу #}
+        {# Информация о предыдущих страницах #}
+        {% if page_obj.has_previous %}
+            {# <a href="?page=1">1</a> # было #}
+
+{# Для каждой ссылки пагинации указываем обработку через новый тег #}
+  {# Стало #}
+            <a href="?{% url_replace page=1 %}">1</a>
+
+            {% if page_obj.previous_page_number != 1 %}
+                ...
+                {# Было  #}
+            {# <a href="?page={{ page_obj.previous_page_number }}">{{ page_obj.previous_page_number }}</a> #}
+
+  {# Стало #}
+                <a href="?{% url_replace page=page_obj.previous_page_number %}">{{ page_obj.previous_page_number }}</a>
+
+            {% endif %}
+        {% endif %}
+
+        {# Информация о текущей странице #}
+        {{ page_obj.number }}
+
+        {# Информация о следующих страницах #}
+        {% if page_obj.has_next %}
+            {# Было  #}
+            {# <a href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a> #}
+
+  {# Стало #}
+            <a href="?{% url_replace page=page_obj.next_page_number %}">{{ page_obj.next_page_number }}</a>
+
+            {% if paginator.num_pages != page_obj.next_page_number %}
+                ...
+                {# Было  #}
+                {# <a href="?page={{ page_obj.paginator.num_pages }}">{{ page_obj.paginator.num_pages }}</a> #}
+
+  {# Стало #}
+                <a href="?{% url_replace page=page_obj.paginator.num_pages %}">{{ page_obj.paginator.num_pages }}</a>
+
+            {% endif %}
+        {% endif %}
+{% endblock content %}
 ---------------------------------------
 
 ---------------------------------------
