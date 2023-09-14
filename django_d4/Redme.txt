@@ -880,9 +880,31 @@ products.html
             {% endif %}
         {% endif %}
 {% endblock content %}
-
 ---------------------------------------
-
+В данный момент в шаблонах использовали авто-генирацию HTML-кода формы.
+Помимо этого, мы сами можем указать какие HTML-теги и их параметры должны
+использоваться в форме.
+Пример формы со строкой и кнопкой поиска.
+Для этого создал файл products_form.htl  на основе products.html но изменил в
+нём форму
+<form action="" method="get">
+        {{ filterset.form.non_field_errors }}
+        {{ filterset.form.name__icontains.errors }}
+        <label for="{{ filterset.form.name__icontains.id_for_label }}">Search</label>
+        <input
+            id="{{ filterset.form.name__icontains.id }}"
+            name="{{ filterset.form.name__icontains.name }}"
+            value="{{ filterset.form.name__icontains.value }}"
+            class="form-control"
+            >
+        <input type="submit" class="mt-3 btn-primary" value="Найти" />
+    </form>
+----------------
+В views.py добавил джинерик
+class ProductsForm(ListView):
+----------------
+В simpleapp/urels.py добавил путь
+path('products_form/', ProductsForm.as_view()),
 ---------------------------------------
 
 ---------------------------------------
