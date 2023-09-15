@@ -927,10 +927,172 @@ class ProductsForm(ListView):
 ----------------
 В simpleapp/urels.py добавил путь
 path('products_form/', ProductsForm.as_view()),
-
 ---------------------------------------
+POST - запросы
+!!!!!!!!!!!!!!!!!!!!!!!
+Для передачи данных  POST - запросах используется тело запроса.
+В самом URL вы его не увилите. Его можно посмотреть с помощью Chrome DevToos.
+Рассмотрим как мог выглядеть запрос на создание товара
 
+POST/products/create HTTP/1.1
+Host: 127.0.0.1
+Content-Type:application/x-www-form-urlencoded
+Content-Length: 16
+name=PythonBook&price=1000
+
+Сначала указываем метод запроса (POST), путь (/products/create) и протокол (HTTP/1.1)
+Host - адрес сервера на который отсылается запрос.
+Content-Type - тип данных в теле запроса.
+Content-Length - длина тела запроса.
+Далее идёт само тело запроса.В нашем случае данные закодированы таким же образом,
+как в параметрах GET- запроса.
+GET - запросы используются, как правило, для того, чтобы получить какую-то
+информацию с сервера, в то время как POST- запросы нужны для загрузки информации
+на сервер. Хотя HTML- формы, должны быть написаны в HTML- файлах, Django
+предоставляет нам инструменты генерации форм. В предыдущем юните мы пробовали
+использовать формы. Тогда форму сгенерировал пакет django-filter.
+Теперь создадим свою форму для модели товаров.
+----------------
+Создадим файл simpleapp/forms.py
+
+from django import forms
+from .models import Product
+
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = '__all__'
+
+Создали собственный класс формы, наследуя ModelForm. Данный стандартный класс
+позволяет создавать формы на основе моделей.
+Саму модель прописываем в Meta классе в поле model=Product.
+fields = '__all__' - означает что нужно из модели взять все поля,
+кроме первичного ключа (его мы не должны редактировать).
+В место этого мы могли и сами перечислить всеполя в ручную.
+fields = [
+    'name',
+    'description',
+    'quentity',
+    'category',
+    'price'
+    ]
+СОВЕТ:
+       Для рабочих проектов лучше перечислять поля самостоятельно, чтобы не
+       было ситуации, что добавили новое поле в модель, которое нельзя
+       редактировать пользователям.
+Как мы расположили поля в списке, в таком порядке они и будут выведены на
+странице.
+Это значит что мы сможем удобнее и логичнее вывести данные для заполнения.
+----------------
+Перейдём в shell
+
+pyton manage.py shell
+
+>>> from simpleapp.forms import ProductForm
+
+>>> f = ProductForm({'name': 'test', 'category': '1', 'price': 42, 'description': '', 'quantit
+y': 1})
+>>> f.is_valid()
+False
+Djano говорит нам что форма не валидна ( тоесть есть ошибка в заполнении )
+>>> f.errors
+{'description': ['This field is required.']} # не добавили описание
+
+>>> f = ProductForm({'name': 'test', 'category': '1', 'price': 42, 'description': 'terof', 'qu
+antity': 1})
+>>> f.is_valid()
+True
+
+Для доступа к обработанным данным существует поле cleaned_data
+>>> f.cleaned_data
+{'name': 'test', 'description': 'terof', 'quantity': 1, 'category': <Category: Колбаса>, 'pric
+e': 42.0}
+Мы видим, что вместо id категории подставился объект модели,
+а ена теперь имеет тип float
+Если нам передадут в форму лишние данные, то при обработке они будут пропущены
+и не возникнет никаких ошибок.
+Добавим в форму лишний ключ 'extra_field'
+
+f = ProductForm({'name': 'test', 'category': '1', 'price': 42,
+'description': 'terof', 'quantity': 1, 'extra_field': 123})
+
+>>> f.is_valid()
+True
+>>> f.cleaned_data
+{'name': 'test', 'description': 'terof', 'quantity': 1, 'category': <Category: Колбаса>, 'pric
+e': 42.0}
+
+Если мы напечатаем объект формы, то увидим сгенерированный HTML.
+Именно этот HTML- код будет добавдяться в шаблон, когда мы будем использовать
+в нём формы.
+
+>>> print(f)
+<tr>
+    <th><label for="id_name">Name:</label></th>
+    <td>
+      <input type="text" name="name" value="test" maxlength="50" required id="id_name">
+   </td>
+  </tr>
+  <tr>
+    <th><label for="id_description">Description:</label></th>
+    <td>
+      <textarea name="description" cols="40" rows="10" required id="id_description">
+terof</textarea>
+    </td>
+  </tr>
+  <tr>
+    <th><label for="id_quantity">Quantity:</label></th>
+    <td>
+      <input type="number" name="quantity" value="1" required id="id_quantity">
+    </td>
+  </tr>
+  <tr>
+    <th><label for="id_category">Category:</label></th>
+    <td>
+      <select name="category" required id="id_category">
+  <option value="">---------</option>
+  <option value="1" selected>Колбаса</option>
+  <option value="2">Велосипеды</option>
+</select>
+    </td>
+  </tr>
+  <tr>
+    <th><label for="id_price">Price:</label></th>
+    <td>
+      <input type="number" name="price" value="42" step="any" required id="id_price">
+    </td>
+  </tr>
+В полях HTML - формы уже проставлены значения из нашей: input c name="name"
+имеет value="test", select name="category" в теге с option value="1" имеет
+selected и так далее.
+
+Помимо того, что форма может быть авто-сгенерирована на основе какой-либо модели,
+Django позволяет создавать их, просто указывая поля. Этот метод похож на то как
+мы описывали модели.
+Для этого используется тело класса формы, а не вложенный в него Мета-класс.
+Вот так выглядело бы создание формы при написании его без Мета-класса.
+class ProductForm(forms.Form):
+    name = forms.CharField(label='Name')
+    description = forms.CharField(label='Description')
+    quentity = forms.IntegerField(label='Quentity')
+    category = forms.ModelChoiceField(label='Category',
+    queryset='Category.objects.all(),)
+    price = forms.FloatField(label='Price')
+
+В ближайее время нам не понадобится эта возможность Django.
+Подробнее здесь: https://docs.djangoproject.com/en/4.0/ref/forms/fields/
 ---------------------------------------
+Бывают ситуации, когда мы не хотим записывать в БД всё, что присылают нам
+пользователи. Например в прошлом юните мы создали цензурный фильтр который убирал
+нецензурные слова. В реальной задаче мы могли бы вообще запретить сохранять
+не нужные статьи (новости). В таком случае нам поможет проверка данных, которые
+пользователь присылает нам в форму.
+-------------------
+Добавим ограничения - описание товара должно быть не менее 20 имволов и не должно
+совпадать с названием товара.
+
+simpleapp/forms.py
 
 ---------------------------------------
 
