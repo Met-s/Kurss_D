@@ -1091,8 +1091,59 @@ class ProductForm(forms.Form):
 -------------------
 Добавим ограничения - описание товара должно быть не менее 20 имволов и не должно
 совпадать с названием товара.
+Читать  документации здесь:
+https://docs.djangoproject.com/en/4.0/ref/forms/api/#django.forms.Form.clean
+В разделе про формы есть пункт, в котором указано, что, если мы хотим сделать
+свои собственные проверки, нам нужно переопределить метод clean в форме.
+Добавим проверкудлины поля description/
 
 simpleapp/forms.py
+
+from django import forms
+from django.core.exceptions import ValidationError
+from .models import Product
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = [
+            'name',
+            'description',
+            'category',
+            'price',
+            'quantity',
+        ]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        description = cleaned_data.get("description")
+        if description is not None and len(description) < 20:
+            raise ValidationError({
+                "description": "Описание не может быть меньше 20 символов."
+            })
+        return cleaned_data
+----------------
+Переопределили метод clean и реализовали в нём проверку.
+Вызываем в методе clean из родительского класса и
+сохоаняем данные формы в clean_data.
+Получаем description и проверяем его значение. Если значение не проходит по
+длине, то вызываем ошибку. В ошибке указываем название поля формы и текст оибки.
+Если проверка прошла успешно, возвращаем из функции проверенные данные формы.
+----------------
+Идём в Shell
+
+from simpleapp.forms import ProductForm
+
+>>> f = ProductForm({'name': 'test', 'category': 1, 'price': 42, 'description': 'test', 'quant
+ity': 1})
+>>> f.errors
+{'description': ['Описание не может быть меньше 20 символов.']}
+
+Проверка работает.
+-------------------
+Проверка данных в двух полях:
+simpleapp/forms.py
+
 
 ---------------------------------------
 
