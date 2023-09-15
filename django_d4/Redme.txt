@@ -1172,7 +1172,81 @@ n': '12345678901234567890', 'quantity': 1})
 Так как мы не указали поле при создании ошибки, Django добавил ключ __all__,
 который сообщает, что ошибка относится ко всей форме, а не к определённому полю.
 ---------------------------------------
+Другой механизм валидации данных
 
+from django import forms
+from django.core.exceptions import ValidationError
+from .models import Product
+
+
+class ProductForm(forms.ModelForm):
+    description = forms.CharField(min_length=20) # указали минимальную длину
+
+    class Meta:
+        model = Product
+        fields = [
+            'name',
+            'description',
+            'category',
+            'price',
+            'quantity',
+        ]
+
+    def clean(self):
+        cleaned_data = super().clean()
+        name = cleaned_data.get("name")
+        description = cleaned_data.get("description")
+
+        if name == description:
+            raise ValidationError(
+                "Описание не должно быть идентично названию."
+            )
+
+        return cleaned_data
+
+Убрали проверку на длину описания из метода, добавили поле в саму форму и в этом
+поле уже поставили ограничение на минимальную длину строки.
+---------------
+Для проверки работы идём в Shell
+
+>>> from simpleapp.forms import ProductForm
+>>> f = ProductForm({'name': 'test', 'category': 1, 'price': 42, 'description': 'test', 'quant
+ity': 1})
+>>> f.errors
+{'description': ['Ensure this value has at least 20 characters (it has 4).']}
+
+>>> f = ProductForm({'name': 'test', 'category': 1, 'price': 42, 'description': '1234567890123
+4567890', 'quantity': 1})
+>>> f.errors
+{}
+------------------
+Всё хорошо. Валидация работает. Однако мы не сможем внести на уровень полей формы
+совместную проверку текста в названии и описании.По этому для каждой задачи нужно
+использовать свой инструмент.
+------------------
+Третий способ проверки валидации данных.
+Позволяет проверить с помощью функции данные одного конкретного поля.
+Ранее с помощью функции мы получали доступ к проверке всех полей вместе.
+Например так можно проверить, написано ли название товара с заглавной буквы.
+
+simpleapp/forms.py
+
+def clean_name(self):
+      name = self.cleaned_data["name"]
+      if name[0].islower():
+          raise ValidationError(
+              "Название должно начинаться с заглавной буквы."
+          )
+      return name
+-----------------
+Выбирайте соответствующий способ валидации данных, исходя из задачи.
+Если можно обойтись переопредилением формы
+description = forms.CharField(min_length=20), то лучше воспользоваться им.
+Если требуется проверить одно поле сложным образом, создайте для этого метод
+clean_fieldname.
+В случае необходимости использования нескольких полей одновременно
+воспользуйтесь методом clean.
+Комбинирование вариантов также допустимо.
 ---------------------------------------
 
 ---------------------------------------
