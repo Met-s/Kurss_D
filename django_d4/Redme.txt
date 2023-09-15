@@ -1144,7 +1144,33 @@ ity': 1})
 Проверка данных в двух полях:
 simpleapp/forms.py
 
+    def clean(self):
+        cleaned_data = super().clean()
+        description = cleaned_data.get("description")
+        if description is not None and len(description) < 20:
+            raise ValidationError({
+                "description": "Описание не может быть меньше 20 символов."
+            })
 
+        name = cleaned_data.get("name")
+        if name == description:
+            raise ValidationError(
+                "Описание не должно быть идентично названию."
+            )
+
+        return cleaned_data
+Добавили поле name для проверки.
+--------------
+Идём в Shell
+
+>>> from simpleapp.forms import ProductForm
+>>> f = ProductForm({'name': '12345678901234567890', 'category': '1', 'price': 42, 'descriptio
+n': '12345678901234567890', 'quantity': 1})
+>>> f.errors
+{'__all__': ['Описание не должно быть идентично названию.']}
+
+Так как мы не указали поле при создании ошибки, Django добавил ключ __all__,
+который сообщает, что ошибка относится ко всей форме, а не к определённому полю.
 ---------------------------------------
 
 ---------------------------------------
