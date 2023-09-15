@@ -26,11 +26,3 @@ class ProductForm(forms.ModelForm):
                 "Описание не должно быть идентично названию."
             )
         return cleaned_data
-
-    def clean_name(self):
-        name = self.cleaned_data["name"]
-        if name[0].islower():
-            raise ValidationError(
-                "Название должно начинаться с заглавной буквы."
-            )
-        return name

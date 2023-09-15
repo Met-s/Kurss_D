@@ -2,11 +2,13 @@ from django.shortcuts import render
 from datetime import datetime
 # Импортируем класс, который говорит нам о том,
 # что в этом представлении мы будем выводить список объектов из БД
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView, DetailView, CreateView
 from .models import Product
 # -----------------
 from django.http import HttpResponse
 from .filters import ProductFilter
+from django.urls import reverse_lazy
+from .forms import ProductForm
 
 
 class ProductsList(ListView):
@@ -104,3 +106,13 @@ class ProductsForm(ListView):
         context = super().get_context_data(**kwargs)
         context['filterset'] = self.filterset
         return context
+
+
+# Добавляем новое представление для создания товаров.
+class ProductCreate(CreateView):
+    # Указываем нашу разработанную форму
+    form_class = ProductForm
+    # модель товаров
+    model = Product
+    # и новый шаблон, в котором используется форма
+    template_name = 'product_edit.html'
