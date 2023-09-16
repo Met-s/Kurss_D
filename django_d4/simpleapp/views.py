@@ -1,8 +1,8 @@
-from django.shortcuts import render
-from datetime import datetime
 # Импортируем класс, который говорит нам о том,
 # что в этом представлении мы будем выводить список объектов из БД
-from django.views.generic import ListView, DetailView, CreateView
+from django.views.generic import (
+    ListView, DetailView, CreateView, UpdateView
+)
 from .models import Product
 # -----------------
 from django.http import HttpResponse
@@ -115,4 +115,11 @@ class ProductCreate(CreateView):
     # модель товаров
     model = Product
     # и новый шаблон, в котором используется форма
+    template_name = 'product_edit.html'
+
+
+# Добавляем представление для изменения товара.
+class ProductUpdate(UpdateView):
+    form_class = ProductForm
+    model = Product
     template_name = 'product_edit.html'

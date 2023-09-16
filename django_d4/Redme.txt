@@ -1374,8 +1374,39 @@ urlpatterns = [
     path('products_form/', ProductsForm.as_view()),
     path('create/', ProductCreate.as_view(), name='product_create'),
 ]
+Здесь выводится название в таком же виде, как описано в методе __str__
+в моделе Product.
+GET и POST - запросы работают по-разному. Главное отличие заключается в способе
+передачи данных.
+Для передачи информации в GET-запросах используется query string,
+а в POST- тело запроса.
 ---------------------------------------
+Добавим страницу изменения информации о товаре. Мы можем использовать одну и
+ту же форму и для создания, и для обнавления товара. И не только форму--
+будем использовать тот же шаблон, хотя никто не запрещает зделать разные формы
+и шаблоны. Единственное, что будет отличаться - дженерик,
+который будем наследовать в представлении.
 
+simpleapp/views.py
+from django.views.generic import (
+    ListView, DetailView, CreateView, UpdateView
+)
+
+# Добавляем представление для изменения товара.
+class ProductUpdate(UpdateView):
+    form_class = ProductForm
+    model = Product
+    template_name = 'product_edit.html'
+------------------
+И регистрируем представление в
+simpleapp/urls.py
+
+from .views import (
+    ProductsList, ProductDetail, ProductsForm, ProductCreate, ProductUpdate
+)
+path('<int:pk>/update/', ProductUpdate.as_view(), name='product_update'),
+--------------
+http://127.0.0.1:8000/products/3/update/
 ---------------------------------------
 
 ---------------------------------------
