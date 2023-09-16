@@ -1408,7 +1408,56 @@ path('<int:pk>/update/', ProductUpdate.as_view(), name='product_update'),
 --------------
 http://127.0.0.1:8000/products/3/update/
 ---------------------------------------
+Удаление товара:
+Для подтверждения удаления сделаем отдельный шаблон.
 
+templates/product_delete.html
+
+{% extends 'flatpages/default.html' %}
+
+{% block content %}
+<h1>Удаление товара</h1>
+    <hr>
+    <form action="" method="post">
+    {% csrf_token %}
+    <p>Удаляем "{{ object.name }}"?</p>
+    <input type="submit" value="Delete"/>
+    </form>
+{% endblock content %}
+----------------
+В views.py добавим представление, которое реализует удаление товара.
+simpleapp/views.py
+
+from django.views.generic import (
+    ListView, DetailView, CreateView, UpdateView, DeleteView,
+)
+from .models import Product
+# -----------------
+from django.http import HttpResponse
+from .filters import ProductFilter
+from django.urls import reverse_lazy
+from .forms import ProductForm
+
+# Представление удаляющее товар.
+class ProductDelete(DeleteView):
+    model = Product
+    template_name = 'product_delete.html'
+    success_url = reverse_lazy('product_list')
+----------------------
+В представлении мы также не указывали фоорму.
+В место неё появляется поле success_url, в которое мы должны указать, куда
+перенаправить пользователя после успешного удаления товара.
+Логика работы reverse_lazy точно такая же, как и у функции reverse,
+которую использовали в моделе Product.
+-----------------------
+Регестрируем новый путь в urls.py с ProductDelete в качестве обработчика.
+simpleapp/urls.py
+
+from .views import (
+    ProductsList, ProductDetail, ProductsForm, ProductCreate,
+    ProductUpdate, ProductDelete,
+)
+ path('<int:pk>/delete/', ProductDelete.as_view(), name='product_delete'),
 ---------------------------------------
 
 ---------------------------------------

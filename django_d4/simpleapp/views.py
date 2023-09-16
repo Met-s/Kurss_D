@@ -1,7 +1,7 @@
 # Импортируем класс, который говорит нам о том,
 # что в этом представлении мы будем выводить список объектов из БД
 from django.views.generic import (
-    ListView, DetailView, CreateView, UpdateView
+    ListView, DetailView, CreateView, UpdateView, DeleteView,
 )
 from .models import Product
 # -----------------
@@ -95,7 +95,7 @@ class ProductsForm(ListView):
     ordering = 'name'
     template_name = 'products_form.html'
     context_object_name = 'products'
-    paginate_by = 2
+    paginate_by = 5
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -123,3 +123,10 @@ class ProductUpdate(UpdateView):
     form_class = ProductForm
     model = Product
     template_name = 'product_edit.html'
+
+
+# Представление удаляющее товар.
+class ProductDelete(DeleteView):
+    model = Product
+    template_name = 'product_delete.html'
+    success_url = reverse_lazy('product_list')
