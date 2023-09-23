@@ -111,6 +111,7 @@ class ProductsForm(ListView):
 
 # Добавляем новое представление для создания товаров.
 class ProductCreate(LoginRequiredMixin, CreateView):
+    raise_exception = True
     # Указываем нашу разработанную форму
     form_class = ProductForm
     # модель товаров
