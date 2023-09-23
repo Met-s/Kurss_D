@@ -1826,8 +1826,35 @@ templates/registration/login.html
         <input type="hidden" name="next" value="{{ next }}">
     </form>
 {% endblock content %}
----------------------------------------
+----------------
+Но после ввода логина и пароля нам высвечивается ошибка.
+По умолчанию после входа Django пытается перенаправить нас на страницу профиля,
+которой пока нет.
+Настроим так, чтобы после входа нас перенаправляло на страницу списка товаров.
+В настройках нужно указать путь в переменной LOGIN_REDIRECT_URL.
+Подробнее здесь:
+https://docs.djangoproject.com/en/4.2/ref/settings/
+LOGIN_REDIRECT_URL¶
+-------------
+django_d4/settings.py
 
+STATIC_URL = 'static/'
+
+LOGIN_REDIRECT_URL = "/products"  # Добавил ссылку на страницу для
+    перенаправления после входа пользователя
+---------------------------------------
+Добавил ссылки на изменение и удаление товара
+products.html
+ <tr>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.description|truncatewords:2 }}</td>
+                    <td>{{ product.category.name }}</td>
+                    <td>{{ product.price|currency:"rub" }}</td>
+                    <td>{{ product.quantity }}</td>
+                    <td><a href="{% url 'product_update' pk=product.id %}">Изменить</a></td>
+                    <td><a href="{% url 'product_delete' pk=product.id %}">Удалить</a>  </td>
+
+                </tr>
 ---------------------------------------
 
 ---------------------------------------

@@ -43,6 +43,7 @@
                     <td>Категория</td>
                     <td>Цена</td>
                     <td>Количество</td>
+                    <td>Действие</td>
                 </tr>
                 {% for product in products %}
                 <tr>
@@ -51,8 +52,13 @@
                     <td>{{ product.category.name }}</td>
                     <td>{{ product.price|currency:"rub" }}</td>
                     <td>{{ product.quantity }}</td>
+                    <td><a href="{% url 'product_update' pk=product.id %}">Изменить</a></td>
+                    <td><a href="{% url 'product_delete' pk=product.id %}">Удалить</a>  </td>
+
                 </tr>
+
                 {% endfor %}
+
             </table>
         {% else %}
             <h2>Товаров нет!</h2>
