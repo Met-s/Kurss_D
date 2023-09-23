@@ -9,7 +9,8 @@ from django.http import HttpResponse
 from .filters import ProductFilter
 from django.urls import reverse_lazy
 from .forms import ProductForm
-
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 class ProductsList(ListView):
     # Указываем модель объекты которой будем выводить
@@ -109,7 +110,7 @@ class ProductsForm(ListView):
 
 
 # Добавляем новое представление для создания товаров.
-class ProductCreate(CreateView):
+class ProductCreate(LoginRequiredMixin, CreateView):
     # Указываем нашу разработанную форму
     form_class = ProductForm
     # модель товаров
@@ -130,3 +131,7 @@ class ProductDelete(DeleteView):
     model = Product
     template_name = 'product_delete.html'
     success_url = reverse_lazy('product_list')
+
+# @login_required
+# def show_protected_page(request):
+#     // do something protected
