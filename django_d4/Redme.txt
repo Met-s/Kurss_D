@@ -1784,9 +1784,48 @@ template/403.html
 При этом, если авторизоваться через страницу админа то страница создания тоара
 откроется.
 ---------------------------------------
+Вход
 
+Сделаем свою страницу входа для пользователей.
+Добавим urls приложения, с которым ранее работали в этом модуле -
+"django.contrib.auth".
+Django скажет, как обрабатывать запросы от пользователей по ссылкам, которые
+начинаются с /accounts/.
+django_d4/urls.py
+
+path('accounts/', include('django.contrib.auth.urls')),
+-----------------
+теперь нам стали доступны новые пути:
+• accounts/login/ [name='login']
+• accounts/logout/ [name='logout']
+• accounts/password_change/ [name='password_change']
+• accounts/password_change/done/ [name='password_change_done']
+• accounts/password_reset/ [name='password_reset']
+• accounts/password_reset/done/ [name='password_reset_done']
+• accounts/reset/// [name='password_reset_confirm']accounts/reset/done/ [name='password_reset_complete']
+---------------------
+Подробнее здесь:
+https://docs.djangoproject.com/en/4.0/topics/auth/default/
+All authentication views¶
+This is a list with all the views django.contrib.auth provides. For implementation details see Using the views.
+
+class LoginView¶
 ---------------------------------------
+Пути и представления Django нам предоставил, а вот шаблоны мы должны описать сами.
+Добавим шаблон. Форма для регистрации пользователя
 
+templates/registration/login.html
+
+{% extends 'flatpages/default.html' %}
+
+{% block content %}
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="login">
+        <input type="hidden" name="next" value="{{ next }}">
+    </form>
+{% endblock content %}
 ---------------------------------------
 
 ---------------------------------------
