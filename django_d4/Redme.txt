@@ -1846,27 +1846,104 @@ LOGIN_REDIRECT_URL = "/products"  # Добавил ссылку на стран�
 Добавил ссылки на изменение и удаление товара
 products.html
  <tr>
-                    <td>{{ product.name }}</td>
-                    <td>{{ product.description|truncatewords:2 }}</td>
-                    <td>{{ product.category.name }}</td>
-                    <td>{{ product.price|currency:"rub" }}</td>
-                    <td>{{ product.quantity }}</td>
-                    <td><a href="{% url 'product_update' pk=product.id %}">Изменить</a></td>
-                    <td><a href="{% url 'product_delete' pk=product.id %}">Удалить</a>  </td>
-
-                </tr>
+    <td>{{ product.name }}</td>
+    <td>{{ product.description|truncatewords:2 }}</td>
+    <td>{{ product.category.name }}</td>
+    <td>{{ product.price|currency:"rub" }}</td>
+    <td>{{ product.quantity }}</td>
+    <td><a href="{% url 'product_update' pk=product.id %}">Изменить</a></td>
+    <td><a href="{% url 'product_delete' pk=product.id %}">Удалить</a>  </td>
+</tr>
 ---------------------------------------
-
+Регисрация
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Создаём отдельное приложение для регистрации пользователей
+python manage.py startapp accounts
 ---------------------------------------
+Создаём форму в:
+accounts/forms.py
 
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+
+class SignUpForm(UserCreationForm):
+    email = forms.EmailField(label="Email")
+    first_name = forms.CharField(label="Имя")
+    last_name = forms.CharField(label="Фамилия")
+
+    class Meta:
+        model = User
+        fields = (
+            "username",
+            "first_name",
+            "last_name",
+            "email",
+            "password1",
+            "password2",
+        )
 ---------------------------------------
-
+Для облегчения этой задачи в модуле аутентификации есть базовая форма, позволяющая
+создать пользователя(в ней реализованы все проверки и валидации). По умолчанию
+она имеет только поле username и два поля для пароля.
+Расширим эту форму добавив поля - электронная почта, имя и фамилия нового пользователя.
+Эти поля есть в модели User.
 ---------------------------------------
+Создадим представление
+accounts/views.py
 
+from django.contrib.auth.models import User
+from django.views.generic.edit import CreateView
+from .forms import SignUpForm
+
+class SignUp(CreateView):
+    model = User
+    form_class = SignUpForm
+    success_url = '/accounts/login'
+    template_name = 'registration/signup.html'
+
+Клас имеет несколько атрибутов:
+• модель формы, инстанс который будет создавать дженерик
+• форма которая будет заполняться пользователем
+• URL, на который нужно направить пользователя после успешной обработки формы
+• шаблон, в котором будет отображенаформа
 ---------------------------------------
+Добавим шаблон:
+templates/registration/signup.html
 
+{% extends "flatpages/default.html" %}
+
+{% block content %}
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <input type="submit" value="Sing up">
+    </form>
+{% endblock content %}
 ---------------------------------------
+Теперь подключим в urlpatterns, чтобы регистрация стала доступна на сайте.
+Для этого создадим и заполним фаил urls.py в нашем новом приложении.
+accounts/urls.py
 
+from django.urls import path
+from .views import SignUp
+
+urlpatterns = [
+    path('signup', SignUp.as_view(), name='signup'),
+]
+---------------------------------------
+Подключим urls приложения account в главном приложении django_d4.
+django_d4/urls.py
+
+path('accounts/', include('django.contrib.auth.urls')),
+path('accounts/', include('accounts.urls')), # Добавил путь
+---------------------------------------
+Префикс путей стандартного приложения auth и accounts совпадает. Ошибок это не
+вызовет. Django будет искать подходящий путь для обработки по очереди, как
+указано в списке - сначало в django.contrib.auth.urls, если не найдёт, то будет
+искать в accounts.urls
+Так как django.contrib.auth.urls не было пути signup, все запросы на
+/accounts/signup будут успешно доходить до нашего представления SignUp
 ---------------------------------------
 
 ---------------------------------------

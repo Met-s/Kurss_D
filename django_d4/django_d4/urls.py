@@ -26,5 +26,6 @@ urlpatterns = [
     path('products/', include('simpleapp.urls')),
     path('multiply/', multiply),
     path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/', include('accounts.urls')), # Добавил
 
 ]
