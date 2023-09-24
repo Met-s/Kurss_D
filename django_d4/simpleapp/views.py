@@ -91,7 +91,8 @@ class ProductDetail(DetailView):
     context_object_name = 'product'
 
 
-class ProductsForm(ListView):
+class ProductsForm(LoginRequiredMixin, ListView):
+    raise_exception = True
     model = Product
     ordering = 'name'
     template_name = 'products_form.html'
@@ -121,14 +122,16 @@ class ProductCreate(LoginRequiredMixin, CreateView):
 
 
 # Добавляем представление для изменения товара.
-class ProductUpdate(UpdateView):
+class ProductUpdate(LoginRequiredMixin, UpdateView):
+    raise_exception = True
     form_class = ProductForm
     model = Product
     template_name = 'product_edit.html'
 
 
 # Представление удаляющее товар.
-class ProductDelete(DeleteView):
+class ProductDelete(LoginRequiredMixin, DeleteView):
+    raise_exception = True
     model = Product
     template_name = 'product_delete.html'
     success_url = reverse_lazy('product_list')

@@ -34,6 +34,7 @@
         {# Добавим кнопку отправки данных формы #}
         <input type="submit" value="Найти" />
     </form>
+     <a href="{% url 'product_create' %}">Создать</a>
   <hr>
         {% if products %}
             <table>
