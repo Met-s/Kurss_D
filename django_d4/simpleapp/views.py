@@ -10,7 +10,9 @@ from .filters import ProductFilter
 from django.urls import reverse_lazy
 from .forms import ProductForm
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin, PermissionRequiredMixin
+)
 
 class ProductsList(ListView):
     # Указываем модель объекты которой будем выводить
@@ -111,8 +113,9 @@ class ProductsForm(LoginRequiredMixin, ListView):
 
 
 # Добавляем новое представление для создания товаров.
-class ProductCreate(LoginRequiredMixin, CreateView):
-    raise_exception = True
+class ProductCreate(PermissionRequiredMixin, CreateView):
+    permission_required = ('simpleapp.add_product',)
+    # raise_exception = True
     # Указываем нашу разработанную форму
     form_class = ProductForm
     # модель товаров
@@ -122,16 +125,18 @@ class ProductCreate(LoginRequiredMixin, CreateView):
 
 
 # Добавляем представление для изменения товара.
-class ProductUpdate(LoginRequiredMixin, UpdateView):
-    raise_exception = True
+class ProductUpdate(PermissionRequiredMixin, UpdateView):
+    permission_required = ('simpleapp.add_product',)
+    # raise_exception = True
     form_class = ProductForm
     model = Product
     template_name = 'product_edit.html'
 
 
 # Представление удаляющее товар.
-class ProductDelete(LoginRequiredMixin, DeleteView):
-    raise_exception = True
+class ProductDelete(PermissionRequiredMixin, DeleteView):
+    permission_required = ('simpleapp.add_product',)
+    # raise_exception = True
     model = Product
     template_name = 'product_delete.html'
     success_url = reverse_lazy('product_list')

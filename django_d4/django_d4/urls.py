@@ -25,7 +25,8 @@ urlpatterns = [
     # подключались к главному приложению с префиксом products/.
     path('products/', include('simpleapp.urls')),
     path('multiply/', multiply),
-    path('accounts/', include('django.contrib.auth.urls')),
-    path('accounts/', include('accounts.urls')), # Добавил
+    # path('accounts/', include('django.contrib.auth.urls')),
+    # path('accounts/', include('accounts.urls')),  # Добавил
+    path('accounts/', include('allauth.urls')),
 
 ]

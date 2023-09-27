@@ -1945,6 +1945,478 @@ path('accounts/', include('accounts.urls')), # Добавил путь
 Так как django.contrib.auth.urls не было пути signup, все запросы на
 /accounts/signup будут успешно доходить до нашего представления SignUp
 ---------------------------------------
+После регистрации нас перенаправит на страницу входа.
+---------------------------------------
+OAutg
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+OAuth - позволяет для регистрации на одном сайте использовать данные с другого
+ресурса (зарегистрироваться с помощью аккаунта гугла).
+------------
+Установим - пакет allauth
+pip install django-allauth
+----------
+Нужно его настроить
+django_d4/settings.py
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'django.contrib.sites',
+    'django.contrib.flatpages',
+    'simpleapp',
+    'django_filters',
+    'accounts',
+
+    # Добавил 3 обязательных приложения allauth и одно, которое отвечает
+    за вход через yndex
+
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.yandex',
+    ]
+---------------
+SITE_ID = 1
+---------------
+EMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [BASE_DIR / 'templates'],
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+
+                    # allauth обязательно нужен этот процессор
+                'django.template.context_processors.request',
+                    ----------
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+-----------------
+Этого раздела может не быть, нужно добавить
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackends',
+    'allauth.account.auth_backends.AuthenticationBackends',
+]
+---------------------------------------
+И так в первую очередь нужно удостовериться, что в конфигурации шаблонов присутствует
+контекстный процессор  'django.template.context_processors.request',
+----------
+Долее нам необходимо добавить бэкенды аутентификации:
+
+• встроенный бэкенд django - 'django.contrib.auth.backends.ModelBackends'-
+    реализующий аутентификацию по username
+• бэкенд аутентификации, предоставленный пакетом allauth
+    'allauth.account.auth_backends.AuthenticationBackends',
+---------
+Грубо говоря, нам нужно включить аутентификацию как по username, так и специфичную
+по emaill или сервис-провайдеру.
+---------
+В установленных приложениях необходимо убедиться в наличии
+некоторых встроенных приложений Django, которые добавляют:
+• пользователей - 'django.contrib.auth',
+• сообщения - 'django.contrib.messages',
+• настройки сайта - 'django.contrib.sites',
+---------
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
+    # добавил строку без неё миграции не проходят
+
+    'allauth.account.middleware.AccountMiddleware',
+]
+---------
+Также нужно подключить приложения из пакета allauth (три обязательных приложения
+    для работы allauth и одно, которое добавит поддержку входа с помощью Yandex).
+---------
+SITE_ID - используется в случае, если данный проект управляет несколькими сайтами.
+    Сейчас для нас это не важно. Достаточно прописать значение 1 для этой переменной.
+---------
+После модификации файла настроек обязательно нужно выполнить миграцию.
+Иначе необходимые модели из подключенных приложений не создадутся в нашей БД.
+---------------------------------------
+Регистрация по emaill и паролю
+!!!!!!!!!!!!!
+В файл настроек проекта внесём дополнительные параметры, в которых укажем обязательные
+и необязательные поля.
+Обязательность остаётся на усмотрение разработчика.
+В нашем случае укажем следующюю комбинацию параметров
+django_d4/settings.py
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+-------
+Первые два параметра указывают на то что поле email является
+обязательным и уникальным.
+Третий говорит что поле username необязательный.
+Следующий что атентификация будет происходить посредством электронной почты.
+Напоследок указываем, что вертификация почты отсутсутствует. Обычно на почту
+отправляется подтверждение аккаунта, после подтверждения коороговостанавливается
+полная функциональность учётной записи. Для тестового примера нам необязательно
+это делать.
+---------
+После этихнастроек, нужно заглянуть в главный файл URL и внести изменения,
+чтобы по accounts было доступно только приложение allauth.
+django_d4/urls.py
+
+from django.contrib import admin
+from django.urls import path, include
+from simpleapp.views import multiply
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('pages/', include('django.contrib.flatpages.urls')),
+    # Делаем так, чтобы все адреса из нашего приложения (simpleapp/urls.py)
+    # подключались к главному приложению с префиксом products/.
+    path('products/', include('simpleapp.urls')),
+    path('multiply/', multiply),
+        # path('accounts/', include('django.contrib.auth.urls')),
+        # path('accounts/', include('accounts.urls')),
+
+    path('accounts/', include('allauth.urls')), # вот этот
+]
+----------
+Теперь для регистрации неоюходимо ввести только email и пароль.
+---------------------------------------
+Регистрация и вход через Yandex
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+В случае регистрации и входа через провайдера необходимо проделать ещё некоторые
+действия, чтобы allauth знал, какие данные передавать Yandex при регистрации
+пользователя, а Yandex знал, что наш сайт будет к нему обращаться.
+---------
+Добавим настройки сайта, которые требуются для allauth
+
+1. Войдём в панель администратора
+    • http://127.0.0.1:8000/admin/
+    • вкладка Sites - отредактировать объект Site
+        Domain name: 127.0.0.1
+        Display name: example.com # и сохранить
+2. Регистрируем приложение в Yndex для работы с сервисом
+    • Преходим https://oauth.yandex.com/client/new и заполняем обязательные поля
+        • General
+            • Service name - SkillFactoryTest
+        • Platforms
+            • Choose at least one platform
+                х Web setvices
+                  Redirect URI
+                  URL the user is redirected to after allowing or denying access to the app
+                     http://127.0.0.1:8000
+                     http://127.0.0.1:8000/accounts/yandex/login/callback
+        • Data access
+            To add a permission, enter its name
+                Permission name # поле для выбора по каким полям проходит регисрация
+                Access to email address # у нас заявлено что по emaill
+                login:email
+                - # и по username
+                Access to username, first name and surname, gender
+                login:info
+----------- Это ТО что написанно в юните
+    • App name: любое название например, SkillFactoryTest
+    • URL to app site: http://127.0.0.1:8000
+    • Callback URL: http://127.0.0.1:8000/accounts/yandex/login/callback
+    • Permisions>Yandex.Passport API: выбрать пункты
+        Adress to email address и
+        Access to username, first name and surname, gender
+
+        Видео: 17 D5 Курсс 11:15 время
+3. Подтверждаем создание приложения и видим секретные данные. Они нам понадобятся
+    для регистрации провайдера в нашем Django проекте.
+4. Секретные данные теперь нужно перенести в наше преложение.
+    Открываем админку: http://127.0.0.1:8000/admin/socialaccount/socialapp/add/
+
+    Provider: Yandex
+    Name: любое имя например Yandex
+    Client id: ID со страницы приложения Yndex. Поле: "ClientID"
+    Seret key: Password сщ страницы приложения Yandex. Поле: "Client secret"
+    Sites переносим единственный сайт в Chosen sites
+И сохраняем.
+------------
+Эти данные и их заполнение в панели администратора можно считать универсальным
+шаблоном. При работе с другими провайдерами отличаться будет только сам процесс
+регистрации приложения на стороннем сайте. Все поля в нашем приложении будут
+заполняться так же.
+
+Вот так мы говорим allauth, что существует провайдер Yandex и вот данные для
+работы с этим провайдером. Введённую нами информацию allauth будет использовать
+для регистрации пользователя с помощью стороннего сайта,  нашем случае это Yandex.
+Сохраняем и переходим : http://127.0.0.1:8000/accounts/login/ нажимаем на
+ссылку Yandex. Открывается страница подтверждения входа через Yandex.
+Нажимаем Continue.
+-------
+Должно перекинуть на страницу входа в аккаунт Yndex или сразу на подтверждение
+входа.
+Yndex уточнит, точно ли мы хотим войти в приложение, используя данные аккаунта
+с сайта Yndex.
+После подтверждения система перенаправит пользователя на главную страницу со
+списком товаров.
+При этом в БД появится запись о новом пользователе.
+А в cocial accounts появится запись о том, что новый пользователь
+зарегистрировался через Yndex.
+---------------------------------------
+Группы пользователей
+!!!!!!!!!!!!!!!!!!!!!!!!!!
+В Django - сначала создаём группу а потом добавляем в неё пользователей.
+---------------------------------------
+Работа с панелью администратора
+------------
+По умолчанию в Django управлять группами можно двумя способами:
+• из панели администратора
+• программно создавать, редактировать и удалять объекты модели Group
+------------
+Через панель администратора самый простой способ
+Понель администратора - Groups - Add goup
+Название и сохраняем.
+---------------------------------------
+Пользователи группы, а точнее их модели имеют тип связи ManyToMany (многие-о-многим)
+Один и тот же пользователь может принадлежать нескольким группам.
+---------------------------------------
+Создадим группы
+    common users
+	managers
+---------
+Добавим ползователей в группы
+Для этого в админ-панеле откроем страницу с профилем юзера, в окошке доступных
+групп выберем в какой или в каких группах он будет состоять
+Permissions
+Groups:
+Available groups
+список доступных групп
+
+В профиль юзера можно зайти и так:
+http://127.0.0.1:8000/admin/auth/user/1/change/
+Это будет первый юзер
+---------------------------------------
+Добавление в группы при регистрации
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Существует несколько способов:
+• Использовать систему сигналов - оторые могут передавать модели.
+• Переопределить класс формы так, чтобы при успешном прохождении регистрации
+    добавлять присоединение к базовой (common user) группе пользователей.
+---------------------------------------
+Для этого изменим форму SignuoForm полностью переписав файл
+accounts/forms.py
+
+from allauth.account.forms import SignupForm
+from django.contrib.auth.models import Group
+
+class CustomSignupForm(SignupForm):
+    def save(self, request):
+        user = super().save(request)
+        common_users = Group.objects.get(name="common users")
+        user.groups.add(common_users)
+        return user
+------------
+Здесь мы импортировали класс формы, который предоставляет allauth, а также
+модель групп. В кастомизированном классе формы, в котором мы хотим добавить
+пользователя в группу, нужно переопредилить только метод save(), который
+выполняется при успешном заполнении формы регистрации.
+    В первой строке метода мы вызываем этот же метод родителя, чтобы необходимые
+проверки и сохранение в модели User были выполненны.
+    Далее мы получаем объект модели группы с названием common users.
+    И в следующей строке мы доюавляем нового пользователя в эту группу.
+Обязательным требованием метода save() является возвращение объекта модели
+User по итогу выполнения функции.
+-------------
+Чтобы allauth распознал нашу форму как ту,что должна выполняться вместо формы
+по умолчанию, необходимо добавить строчку в фаил настроек проекта settings.py
+django_d4/settings.py
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_UNIQUE_EMAIL = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_EMAIL_VERIFICATION = 'none'
+# добавили
+ACCOUNT_FORMS = {"signup": "accounts.forms.CustomSignupForm"}
+-------------
+Путь до формы ("accounts.forms.CustomSignupForm") у нас состоит из указания
+приложения accounts, файла forms и класса формы CustomSignupFor.
+-------------
+Посмотрим как всё работает, создадим пользователя:
+http://127.0.0.1:8000/accounts/signup/
+-------------
+Заодя на страниц этого пользователя, видим что он находится в группе.
+Всё работает.
+---------------------------------------
+Добавление группы будет радотать только для пользователей, которые регистрируются
+с помощью почты и пароля. Для тех кто регистрируется через сторонние сервисы,
+форма которую мы изменили не будет выполняться, и в группу добавляться он
+небудет.
+---------------------------------------
+Для решения этой задачи можно использовать механизм сигналов.
+В Django есть специальный механизм сигналов, при возникновении которых могут
+вызываться указываемые разработчиком функции. В документации allauth (
+https://django-allauth.readthedocs.io/en/latest/account/signals.html?highlight=allauth.account.signals.user_signed_up#signals
+есть список таких сигналов. Из них мы можем выбрать тот, который овечает за регистрацию
+пользователя, (allauth.account.signals.user_signed_up) и указать, что при его
+возникновении должна выполняться функция добавления пользователя в группу.
+В документации Django есть целый раздел посвященный сигналам.
+https://docs.djangoproject.com/en/4.2/ref/signals/
+---------------------------------------
+Права доступа
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Для этого войдём в соотвецтвующую страницу пользователя или группы переместим
+разрешения в правую колонку.
+Группа managers
+
+simpleapp |product|Can add product
+simpleapp |product|Can change product
+simpleapp |product|Can delete product
+------------
+Теперь группа менеджеров имеет права на создание, изменение и удаление товаров.
+------------
+А вот так добавление группе менеджеров прав на создание товаров
+выглядит в виде Pthon кода:
+
+managers = Group.objects.get(name='managers')
+perm = Permission.objects.get(name='Can add product')
+managers.permissionsadd(perm)
+-------------
+Однако назначение прав в админке не каак не изменит работу проекта.
+Ведь мы нигде не указали, где эти права должны проверяться и применяться.
+---------------------------------------
+Проверка прав в представлении
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Мы уже знакомились с миксином LoginRequiredMixin.
+Проверкуправ добавить будет не сложнее.
+В классе-представлении мы должны добавить миксин PermissionRequiredMixin,
+чтобы Django проверял у пользователя, который будет делать запрос, наличие
+указанных нами прав.
+Пример:
+
+from django.contrib.auth.mixins import PermissionRequiredMixin
+
+class MyView(PermissionRequiredMixin, View):
+    permission_required = ('<app>.<action>_<model>',
+                           '<app>.<action>_<model>')
+
+По этому примеру добавим проверки в наши старые представления:
+
+simpleapp/views.py
+
+from django.contrib.auth.mixins import (
+    LoginRequiredMixin, PermissionRequiredMixin
+)
+class ProductCreate(PermissionRequiredMixin, CreateView):
+    permission_required = ('simpleapp.add_product',) # Добавил проверку прав
+    # raise_exception = True
+    # Указываем нашу разработанную форму
+    form_class = ProductForm
+    # модель товаров
+    model = Product
+    # и новый шаблон, в котором используется форма
+    template_name = 'product_edit.html'
+
+По этому примеру делаем с представлениями
+class ProductUpdate(PermissionRequiredMixin, UpdateView):
+    permission_required = ('simpleapp.add_product',)
+
+class ProductDelete(PermissionRequiredMixin, DeleteView):
+    permission_required = ('simpleapp.add_product',)
+---------------------------------------
+Проверка прав в шаблоне
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Теперь получаетя так, что ссылки на заблокированные страницы выводятся всемпользователям
+А заблоктроваными они будут для всех клиентов магазина, то есть для подавляющего
+количества пользователей. Пользователи будут на них нажимать и получать ошибки.
+Это не очень хорошо.
+Чтобы скрыть лишние ссылки, можно установить проверки в самом шаблоне:
+
+templates/products.html
+
+    {# Теперь будем проверять не request.user.is_authenticated, а конкретные права #}
+
+{% if perms.simpleapp.add_product %}
+     <a href="{% url 'product_create' %}">Создать</a>
+{% endif %}
+
+                  <hr>
+                        {% if products %}
+                            <table>
+                                 <tr>
+                                    <td>Название</td>
+                                    <td>Описание</td>
+                                    <td>Категория</td>
+                                    <td>Цена</td>
+                                    <td>Количество</td>
+
+{# Условие получается составным #}
+{% if perms.simpleapp.change_product or perms.simpleapp.delete_product %}
+    <td>Действие</td>
+{% endif %}
+
+                </tr>
+                {% for product in products %}
+                <tr>
+                    <td>{{ product.name }}</td>
+                    <td>{{ product.description|truncatewords:2 }}</td>
+                    <td>{{ product.category.name }}</td>
+                    <td>{{ product.price|currency:"rub" }}</td>
+                    <td>{{ product.quantity }}</td>
+
+<td>
+   {# А здесь доступ к каждой ссылке будет проверяться отдельно #}
+    {% if perms.simpleapp.change_product %}
+        <a href="{% url 'product_update' pk=product.id %}">Изменить</a>
+    {% endif %}
+    {% if perms.simpleapp.delete_product %}
+        <a href="{% url 'product_delete' pk=product.id %}">Удалить</a>
+    {% endif %}
+</td>
+                </tr>
+                {% endfor %}
+            </table>
+        {% else %}
+            <h2>Товаров нет!</h2>
+        {% endif %}
+-------------
+Теперь у нашего пользователя даже ссылки не видны.
+-------------
+Чтобы ссылки появились, можно в панели администратора раздать права как группе
+пользователей так и отдельному пользователю.
+---------------------------------------
+Если обобщить, то можно сказать, что авторизация сводится к двум этапам:
+• ограничению прав для тех или инных действий на сайте (например, через
+    PermissionRequiredMixin);
+• предоставлению прав для отдельных пользователей и/или групп.
+
+---------------------------------------
+
+---------------------------------------
+
+
+---------------------------------------
+
+---------------------------------------
+
+---------------------------------------
+
+---------------------------------------
+
+---------------------------------------
+
+
+---------------------------------------
+
+---------------------------------------
 
 ---------------------------------------
 

@@ -1,27 +1,23 @@
 {% extends 'flatpages/default.html' %}
 {% load custom_filters %}
-
 <!--Подключаем новый файл с нашим тегом-->
 {% load custom_tags %}
 
-<h2>{% block title %}
-    Products
-    {% endblock title %}}</h2>
+
+{% block title %}
+Products
+{% endblock title %}}
+
 
 {% block content %}
     <hr>
     <h3>products.html</h3>
     <hr>
     <h1>Все товары</h1>
-
-
-
-
 <!--Вот так выглядело использование переменной и фильтра-->
 <!--    {# <h3>{{ time_now|date:'M d Y'}}</h3> #}-->
 <!--А вот так мы используем наш тег-->
     <h3>{% current_time '%b %d %Y' %}</h3>
-
 
 <!--        Если в переменной next_sale будет NONE,
 то выведется указанный в переменной текст-->
@@ -34,7 +30,11 @@
         {# Добавим кнопку отправки данных формы #}
         <input type="submit" value="Найти" />
     </form>
+---------
+    {# Теперь будем проверять не request.user.is_authenticated, а конкретные права #}
+{% if perms.simpleapp.add_product %}
      <a href="{% url 'product_create' %}">Создать</a>
+{% endif %}
   <hr>
         {% if products %}
             <table>
@@ -44,7 +44,10 @@
                     <td>Категория</td>
                     <td>Цена</td>
                     <td>Количество</td>
+                 {# Условие получается составным #}
+                 {% if perms.simpleapp.change_product or perms.simpleapp.delete_product %}
                     <td>Действие</td>
+                 {% endif %}
                 </tr>
                 {% for product in products %}
                 <tr>
@@ -53,11 +56,17 @@
                     <td>{{ product.category.name }}</td>
                     <td>{{ product.price|currency:"rub" }}</td>
                     <td>{{ product.quantity }}</td>
-                    <td><a href="{% url 'product_update' pk=product.id %}">Изменить</a></td>
-                    <td><a href="{% url 'product_delete' pk=product.id %}">Удалить</a>  </td>
 
+                    <td>
+                        {# А здесь доступ к каждой ссылке будет проверяться отдельно #}
+                        {% if perms.simpleapp.change_product %}
+                            <a href="{% url 'product_update' pk=product.id %}">Изменить</a>
+                        {% endif %}
+                        {% if perms.simpleapp.delete_product %}
+                            <a href="{% url 'product_delete' pk=product.id %}">Удалить</a>
+                        {% endif %}
+                    </td>
                 </tr>
-
                 {% endfor %}
 
             </table>
