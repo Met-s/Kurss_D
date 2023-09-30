@@ -52,7 +52,7 @@ Products
                 {% for product in products %}
                 <tr>
                     <td>{{ product.name }}</td>
-                    <td>{{ product.description|truncatewords:2 }}</td>
+                    <td>{{ product.description|truncatewords:2}}</td>
                     <td>{{ product.category.name }}</td>
                     <td>{{ product.price|currency:"rub" }}</td>
                     <td>{{ product.quantity }}</td>
