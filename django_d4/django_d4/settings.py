@@ -161,3 +161,11 @@ EMAIL_HOST_PASSWORD = email_host_password
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
 DEFAULT_FROM_EMAIL = "si-mart@yandex.ru"
+EMAIL_SUBJECT_PREFIX = "DORATY : "
+
+SERVER_EMAIL = "si-mart@yandex.ru"
+MANAGERS = (
+    ('Ivan', 'feronts@mail.ru'),
+    ('Petr', 'matveykey@mail.ru'),
+    ('Bob', 'den_vo@mail.ru'),
+)
