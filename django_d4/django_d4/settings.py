@@ -150,12 +150,14 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_USERNAME_REQUIRED = False
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
-ACCOUNT_EMAIL_VERIFICATION = 'none'
+ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+# Указали форму для дополнительной обработки регистрации пользователя
 ACCOUNT_FORMS = {"signup": "accounts.forms.CustomSignupForm"}
 
-#"django.core.mail.backends.smtp.EmailBackend"
+# Настройка почты
+#"django.core.mail.backends.smtp.EmailBackend - console"
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 465
 EMAIL_HOST_USER = "si-mart"
@@ -169,5 +171,4 @@ SERVER_EMAIL = "si-mart@yandex.ru"
 MANAGERS = (
     ('Ivan', 'feronts@mail.ru'),
     ('Petr', 'matveykey@mail.ru'),
-    ('Bob', 'den_vo@mail.ru'),
 )
