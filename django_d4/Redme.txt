@@ -2680,13 +2680,164 @@ templates/account/email/email_confirmation_message.txt
                     django-allauth при формировании вертификационных писем
 • email_confirmation_message.txt - сам шаблон письма, который будет
                     искать django-allauth.
+
 Все эти шаблоны можно переписать
--------------------
-
--------------------
-
 ---------------------------------------
+Создание списка рассылок
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+Интерфейс подписки на рассылки
 
+Чтобы хранить список категорий, на которые подписан пользователь, нужна новая
+таблица в БД.
+Добавим дляя этого модель Subscriptions.
+
+simpleapp/models.py
+
+from django.contrib.auth.models import User
+
+class Subscriptions(models.Model):
+    user = models.ForeignKey(to=User, on_delete=models.CASCADE,
+                             related_name='subscriptions')
+    category = models.ForeignKey(to='Category', on_delete=models.CASCADE,
+                                 related_name='subscriptions')
+-------------------
+После добавления модели нужно создать и выполнить миграцию.
+-------------------
+Если мы пойдём старым методом использования дженериков, понадобится несколько
+представлений: вывести список, добавить подписку, удалить подписку.
+Поприбуем обойтись одним представлением.
+simpleapp/views.py
+
+from django.contrib.auth.decorators import login_required
+from django.db.models import Exists, OuterRef
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_protect
+from .models import Product, Subscriptions, Category
+
+@login_required
+@csrf_protect
+def subscriptions(request):
+    if request.method == 'POST':
+        category_id = request.POST.get('category_id')
+        category = Category.objects.get(id=category_id)
+        action = request.POST.get('action')
+
+        if action == 'subscribe':
+            Subscriptions.objects.create(user=request.user, category=category)
+        elif action == 'unsubscribe':
+            Subscriptions.objects.filter(
+                user=request.user,
+                category=category,
+            ).delete()
+
+    categories_with_subscriptions = Category.objects.annotate(
+        user_subscribed=Exists(
+            Subscriptions.objects.filter(
+                user=request.user,
+                category=OuterRef('pk'),
+            )
+        )
+    ).order_by('name')
+    return render(
+        request,
+        'subscriptions.html',
+        {'categories': categories_with_subscriptions},
+    )
+-------------------
+Вот такое представление у нас получается.
+Его могут использовать только зарегистрированные пользователи. Для этого ы
+использовали декоратор @login_required.
+А также с помощью декоратора @csrf_protect у нас будет автоматически
+проверяться CSRF-токен в получаемых формах.
+    В представлении можем применять как GET, так и POST запросы.
+• GET - будет выполняться когда пользователь просто открывает страницу подписок
+• POST - когда пользователь нажмёт кнопку подписки или отписки от категории.
+--------
+    Далее по коду мы делаем не простой запрос в БД. Мы собираем все категории
+товаров с сортировкой по алфавиту и добавляем спец-поле, которое покажет,
+подписан сейчас пользователь на данную категорию или нет.
+--------------------------------------------------------
+ЭТОТ КОД ПИСАТЬ НЕ НУЖНО:
+Вот так будет выглядеть запрос в SQL (этот код приведён для тех, кто
+разбирается в SQL):
+
+SELECT "simpleapp_category"."id",
+       "simpleapp_category"."name",
+       EXISTS
+    (SELECT (1) AS "a"
+    FROM "simpleapp_subscription" U0
+    WHERE (U0."category_id" = ("simpleapp_category"."id")
+           AND U0."user_id" = 16)
+    LIMIT 1) AS "user_subscribed"
+FROM "simpleapp_category"
+ORDER BY "simpleapp_category"."name" ASC
+-------------------------------------------------------
+Запросы (query) которые вы пишете в Django, можно вывести в консоль с помощью
+функции print()
+
+print(Category.objects.all().query)
+SELECT "simpleapp_category"."id", "simpleapp_category"."name" FROM "simpleapp_category"
+
+После сбора данных из базы мы просто выводим все категории товаров с подписками
+ пользователя.
+-------------------
+Добавим новое представление в список url:
+simpleapp/urls.py
+
+from .views import (
+    ProductsList, ProductDetail, ProductsForm, ProductCreate,
+    ProductUpdate, ProductDelete, subscriptions,
+)
+
+path('subscriptions/',subscriptions, name='subscriptions')
+-------------------
+Теперь подписки у нас будут доступны по пути /products/subscriptions/.
+Для учебного проекта это не плохо.
+Но в рабочих проектах нужно будет больше задумываться над тем, насколько
+правильно у нас построено ериложение.
+    Может. Для подписок лучше было сделать отдельное Django-приложение?
+Если подписки будут только на товары, и других видов уведовлений для
+пользователей не будет, то подписки могут жить в этом приложении.
+    В решении таких вопросов поможет тольео опыт и понимание задач продукта,
+который вы разрабатываете.
+-------------------
+Создадим шаблон:
+templates/subscriptions.html
+
+{% extends 'flatpages/default.html' %}
+
+{% block title %}
+Subscriptions
+{% endblock title %}
+
+{% block content %}
+    {% for category in categories %}
+        <p>
+            {{ category.name }}
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="category_id"
+                       value="{{ category_id }}" />
+
+                {% if category.user_subscribed %}
+                    <button disabled>Подписаться</button>
+                    <button name="action" value="unsubscribe">Отписаться</button>
+                {% else %}
+                    <button name="action"
+                            value="subscribe">Подписаться</button>
+                    <button disabled>Отписаться</button>
+                {% endif %}
+            </form>
+        </p>
+    {% endfor %}
+{% endblock content %}
+-------------------
+Для каждой категории мы выводим две кнопки: подписаться и отписаться.
+С помощью аргумента кнопки disabled в HTML делаем её неактивной. Пользователь
+не сможет нажать на отписатся пока не подпишется.
+С помощью спец-инпута с типом hidden мы говорим браузеру передать вместе с
+формой id категории.
+    После нажатия на кнопку подписки форма отправится, и страница обновится.
 ---------------------------------------
 
 

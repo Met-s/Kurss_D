@@ -3,7 +3,7 @@
 from django.views.generic import (
     ListView, DetailView, CreateView, UpdateView, DeleteView,
 )
-from .models import Product
+from .models import Product, Subscriptions, Category
 # -----------------
 from django.http import HttpResponse
 from .filters import ProductFilter
@@ -13,6 +13,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import (
     LoginRequiredMixin, PermissionRequiredMixin
 )
+# -----------------
+from django.db.models import Exists, OuterRef
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_protect
+from pprint import pprint
+
 
 class ProductsList(ListView):
     # Указываем модель объекты которой будем выводить
@@ -140,6 +146,39 @@ class ProductDelete(PermissionRequiredMixin, DeleteView):
     model = Product
     template_name = 'product_delete.html'
     success_url = reverse_lazy('product_list')
+
+
+@login_required
+@csrf_protect
+def subscriptions(request):
+    if request.method == 'POST':
+        category_id = request.POST.get('category_id')
+        pprint(f'CATEGORY_ID = {category_id}')
+        category = Category.objects.get(id=category_id)
+        action = request.POST.get('action')
+
+
+        if action == 'subscribe':
+            Subscriptions.objects.create(user=request.user, category=category)
+        elif action == 'unsubscribe':
+            Subscriptions.objects.filter(
+                user=request.user,
+                category=category,
+            ).delete()
+
+    categories_with_subscriptions = Category.objects.annotate(
+        user_subscribed=Exists(
+            Subscriptions.objects.filter(
+                user=request.user,
+                category=OuterRef('pk'),
+            )
+        )
+    ).order_by('name')
+    return render(
+        request,
+        'subscriptions.html',
+        {'categories': categories_with_subscriptions},
+    )
 
 # @login_required
 # def show_protected_page(request):
