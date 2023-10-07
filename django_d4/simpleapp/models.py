@@ -34,5 +34,5 @@ class Category(models.Model):
 class Subscriptions(models.Model):
     user = models.ForeignKey(to=User, on_delete=models.CASCADE,
                              related_name='subscriptions')
-    category = models.ForeignKey(to='Category', on_delete=models.CASCADE,
+    category = models.ForeignKey(to=Category, on_delete=models.CASCADE,
                                  related_name='subscriptions')

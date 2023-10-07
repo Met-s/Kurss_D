@@ -156,7 +156,7 @@ def subscriptions(request):
         pprint(f'CATEGORY_ID = {category_id}')
         category = Category.objects.get(id=category_id)
         action = request.POST.get('action')
-
+        pprint(category)
 
         if action == 'subscribe':
             Subscriptions.objects.create(user=request.user, category=category)
