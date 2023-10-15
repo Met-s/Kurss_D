@@ -173,3 +173,18 @@ MANAGERS = (
     ('Ivan', 'feronts@mail.ru'),
     ('Petr', 'matveykey@mail.ru'),
 )
+# redis://default:47PifD0CqCN5DyOyDP32pWbItetYBwnD@redis-11393.c304.europe-west1-2.gce.cloud.redislabs.com:11393
+# CELERY_BROKER_URL = ('redis://default:47PifD0CqCN5DyOyDP32pWbItetYBwnD@redis'
+#                      '-11393.c304.europe-west1-2.gce.cloud.redislabs.com:11393v')
+# CELERY_RESULT_BACKEND = ('redis://default:47PifD0CqCN5DyOyDP32pWbItetYBwnD@redis-11393.c304.europe-west1-2.gce.cloud.redislabs.com:11393')
+
+# CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
+# CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
+CELERY_BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+
+
+# --polo=solo
