@@ -18,8 +18,15 @@ from django.db.models import Exists, OuterRef
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
 from pprint import pprint
+# ------------------------------------------------------
+# from django.http import HttpResponse
+from django.views import View
+from .tasks import hello, printer
+from datetime import datetime, timedelta, timezone
+from django.utils import timezone
 
 
+# -----------------------------------------------------
 class ProductsList(ListView):
     # Указываем модель объекты которой будем выводить
 
@@ -180,6 +187,26 @@ def subscriptions(request):
         {'categories': categories_with_subscriptions},
     )
 
+
 # @login_required
 # def show_protected_page(request):
 #     // do something protected
+
+class IndexView(View):
+    def get(self, request):
+        printer.apply_async([10], eta = datetime.now() + timedelta(seconds=5))
+        pprint(f'DATETIME : {datetime.now()}')
+        # printer.apply_async([10], eta=datetime.now()+timedelta(seconds=5))
+
+        # printer.apply_async([10], countdown=5)
+        # printer.delay(10)
+        hello.delay()
+        return HttpResponse('Hello!!!!')
+
+
+
+# class IndexView(View):
+#     def get(self, request):
+#         hello.delay()
+#         return HttpResponse('Hello!!!!')
+

@@ -3448,6 +3448,9 @@ app.autodiscover_tasks()
 ---------------------------------------
 
 ---------------------------------------
+[tasks]
+  . simpleapp.tasks.hello
+  . simpleapp.tasks.printer
 
 ---------------------------------------
 
