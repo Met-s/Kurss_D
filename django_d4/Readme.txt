@@ -3410,11 +3410,41 @@ Redislabs, с помощью которого вы будете хранить �
 ---------------------------------------
 
 ---------------------------------------
+import os
+from celery import Celery
 
+os.environ.setdefault('DJANGO_SETTINGS_MODULE',
+                      'django_d4.settings')
+
+app = Celery('django_d4')
+app.config_from_object('django.conf:settings',
+                       namespace='CELERY')
+app.autodiscover_tasks()
 ---------------------------------------
 
 ---------------------------------------
+(venv) PS C:\Users\DC\PycharmProjects\Django_D4\django_d4> celery -A django_d4 worker -l
+ INFO --pool=solo
 
+ -------------- celery@DESKTOP-IH4T6KH v5.3.4 (emerald-rush)
+--- ***** -----
+-- ******* ---- Windows-10-10.0.19045-SP0 2023-10-16 11:18:28
+- *** --- * ---
+- ** ---------- [config]
+- ** ---------- .> app:         django_d4:0x240a06df310
+- ** ---------- .> transport:   redis://localhost:6379//
+- ** ---------- .> results:     redis://localhost:6379/
+- *** --- * --- .> concurrency: 4 (solo)
+-- ******* ---- .> task events: OFF (enable -E to monitor tasks in this worker)
+--- ***** -----
+ -------------- [queues]
+                .> celery           exchange=celery(direct) key=celery
+
+
+[tasks]
+  . simpleapp.tasks.hello
+------------------
+ВАЖНО: после каждого изменения кода задач необходимо перезагружать Celery. Он не умеет автоматически обнаруживать изменения кода.
 ---------------------------------------
 
 ---------------------------------------
