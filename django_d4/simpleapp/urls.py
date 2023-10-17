@@ -1,7 +1,8 @@
+# from allauth.mfa.views import IndexView   # авто импорт
 from django.urls import path
 from .views import (
     ProductsList, ProductDetail, ProductsForm, ProductCreate,
-    ProductUpdate, ProductDelete, subscriptions, IndexView
+    ProductUpdate, ProductDelete, subscriptions,IndexView
 )
 
 
