@@ -207,6 +207,6 @@ def subscriptions(request):
 class IndexView(View):
     def get(self, request):
         # printer.apply_async([10], countdown=5)
-        printer.apply_async([10], eta=timezone.now() + timedelta(seconds=5))
+        # printer.apply_async([10], eta=timezone.now() + timedelta(seconds=5))
         hello.delay()
         return HttpResponse('Hello!!!!')
