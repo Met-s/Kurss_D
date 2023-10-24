@@ -22,13 +22,14 @@ from pprint import pprint
 # # from django.http import HttpResponse
 from django.views import View
 from .tasks import hello, printer
-
-
 from datetime import datetime, timedelta
 from django.utils import timezone
-
-
 # -----------------------------------------------------
+# from django.views.decorators.cache import cache_page
+# -----------------------------------------------------
+from django.core.cache import cache
+
+
 class ProductsList(ListView):
     # Указываем модель объекты которой будем выводить
 
@@ -106,6 +107,18 @@ class ProductDetail(DetailView):
     template_name = 'product.html'
     # Название в котором будет выбранный пользователем продукт
     context_object_name = 'product'
+#     queryset = Product.objects.all()
+#
+#     def get_object(self, *args, **kwargs):  # переопределяем метод получения
+# # объекта, как ни странно
+#         obj = cache.get(f'product-{self.kwargs["pk"]}', None) # # кэш очень
+# # похож на словарь, и метод get действует так же. Он забирает значение
+# # по ключу, если его нет, то забирает None.
+# # если объекта нет в кэше, то получаем его и записываем в кэш
+#         if not obj:
+#             obj = super().get_object(queryset=self.queryset)
+#             cache.set(f'product-{self.kwargs["pk"]}', obj)
+#             return obj
 
 
 class ProductsForm(LoginRequiredMixin, ListView):
@@ -159,6 +172,7 @@ class ProductDelete(PermissionRequiredMixin, DeleteView):
 
 @login_required
 @csrf_protect
+# @cache_page(60 * 15)
 def subscriptions(request):
     if request.method == 'POST':
         category_id = request.POST.get('category_id')

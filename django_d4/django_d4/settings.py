@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 from config import email_host_password
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -62,6 +62,10 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+
+    'django.middleware.cache.UpdateCacheMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.cache.FetchFromCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'django_d4.urls'
@@ -174,18 +178,28 @@ MANAGERS = (
     ('Ivan', 'feronts@mail.ru'),
     ('Petr', 'matveykey@mail.ru'),
 )
+# Celory Веб
 # redis://default:47PifD0CqCN5DyOyDP32pWbItetYBwnD@redis-11393.c304.europe-west1-2.gce.cloud.redislabs.com:11393
 # CELERY_BROKER_URL = ('redis://default:47PifD0CqCN5DyOyDP32pWbItetYBwnD@redis'
 #                      '-11393.c304.europe-west1-2.gce.cloud.redislabs.com:11393v')
 # CELERY_RESULT_BACKEND = ('redis://default:47PifD0CqCN5DyOyDP32pWbItetYBwnD@redis-11393.c304.europe-west1-2.gce.cloud.redislabs.com:11393')
-
 # CELERY_BROKER_URL = 'redis://127.0.0.1:6379'
 # CELERY_RESULT_BACKEND = 'redis://127.0.0.1:6379'
+
 CELERY_BROKER_URL = 'redis://localhost:6379'
 CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 
-
-# --polo=solo
+CACHES = {
+    'default': {
+        'TIMEOUT': 60,  # добавляем стандартное время ожидания в минуту
+                        # (по умолчанию это 5 минут — 300 секунд)
+        'BACKEND':
+            'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BASE_DIR, 'cache_files') # Указываем, куда
+        # будем сохранять кэшируемые файлы! Не забываем создать папку
+        # cache_files внутри папки с manage.py!
+    }
+}
