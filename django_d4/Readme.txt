@@ -4339,9 +4339,103 @@ CACHES = {
 изменятся. Для этого перейдём в sample_app/views.py, чтобы переопределить в
 DetailView метод получения объекта.
 -------------
+simpleapp/views.py
+
+from django.core.cache import cache  # импортируем наш кэш
+
+class ProductDetail(DetailView):
+    # Модель всё та же, но мы хотим получить информацию по отдельному товару
+    model = Product
+    # Используем другой шаблон product.html
+    template_name = 'product.html'
+    # Название в котором будет выбранный пользователем продукт
+    context_object_name = 'product'
+    queryset = Product.objects.all()
+
+    def get_object(self, *args, **kwargs):  # переопределяем метод получения
+        # объекта, как ни странно
+        obj = cache.get(f'product-{self.kwargs["pk"]}', None)  # # кэш очень
+        # Похож на словарь, и метод get действует так же. Он забирает значение
+        # по ключу, если его нет, то забирает None.
+        # Если объекта нет в кэше, то получаем его и записываем в кэш
+        if not obj:
+            obj = super().get_object(queryset=self.queryset)
+            cache.set(f'product-{self.kwargs["pk"]}', obj)
+        return obj
+-------------
+Если объекта нет в кэше, то мы берём его из БД и кэшируем, а если есть, то
+сразу берём из кэша и возвращаем. Но! Давайте узнаем, что же будет происходить
+сейчас (не забудьте убрать кэширование из urls.py , иначе получится очень
+грязно!).
+-------------
+Убрал из:
+settings.py
+
+    # 'django.middleware.cache.UpdateCacheMiddleware',
+    # 'django.middleware.common.CommonMiddleware',
+    # 'django.middleware.cache.FetchFromCacheMiddleware',
+Иначе будет происходить кеширование всего сайта.
+-----
+ # 'TIMEOUT': 60,
+-------------
+simpleapp/urls.py
+Вернул как было
+path('<int:pk>', cache_page(60)(ProductDetail.as_view()),
+-------------
 
 -------------
 
+-------------
+
+-------------
+    Зайдите на кэшируемую страницу и попробуйте через админ-панель что-либо в ней
+поменять, а потом обновите страницу.
+
+И тут-то вас ждёт сюрприз! Весь нюанс в том, что теперь ничего не поменяется
+вообще… никогда... Ведь мы не установили реакцию на редактирование объекта.
+Когда объект меняется его надо удалять из кэша, чтобы ключ сбрасывался и
+больше не находился.
+-------------
+Переопределим метод save в:
+simpleapp/models.py
+
+from django.core.cache import cache
+
+class Product(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+    description = models.TextField()
+    quantity = models.IntegerField(
+        validators=[MinValueValidator(0,
+                                      'Quantity should be >= 0')])
+    # Поле которое будет ссылаться на модель категории
+    category = models.ForeignKey(to='Category', on_delete=models.CASCADE,
+                                 related_name='products')
+    # все продукты в категории будут доступны через поле products
+    price = models.FloatField(
+        validators=[MinValueValidator(0.0,
+                                      'Price should be >= 0')])
+
+    def __str__(self):
+        return f'{self.category} : {self.name} : {self.description[:20]}'
+
+    # Добавим absolute_urls
+    def get_absolute_url(self):
+        return f'/products/{self.id}' # добавим абсолютный путь, чтобы после
+                            создания нас перебрасывало на страницу с товаром
+        # return reverse('product_detail', args=[str(self.id)]) # это было
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs) # сначала вызываем метод родителя, чтобы
+                                        объект сохранился
+        cache.delete(f'product-{self.pk}')   # затем удаляем его из кэша,
+                                                чтобы сбросить его
+-------------
+Вот и всё. Правда, теперь будет тяжело проверить работу самого кэширования,
+т. к. в небольших проектах и тем более на локальном сервере нагрузок нет
+вообще, и большого прироста мы не почувствуем, но, тем не менее, при
+разработке это помогает понять суть самого явления кэширования и научиться в
+дальнейшем применять кэширование в боевых проектах, экономя при этом ресурсы
+сервера и увеличивая производительность.
 ---------------------------------------
 
 ---------------------------------------

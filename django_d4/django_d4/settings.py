@@ -63,9 +63,9 @@ MIDDLEWARE = [
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
     'allauth.account.middleware.AccountMiddleware',
 
-    'django.middleware.cache.UpdateCacheMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.cache.FetchFromCacheMiddleware',
+    # 'django.middleware.cache.UpdateCacheMiddleware',
+    # 'django.middleware.common.CommonMiddleware',
+    # 'django.middleware.cache.FetchFromCacheMiddleware',
 ]
 
 ROOT_URLCONF = 'django_d4.urls'
@@ -194,7 +194,7 @@ CELERY_RESULT_SERIALIZER = 'json'
 
 CACHES = {
     'default': {
-        'TIMEOUT': 60,  # добавляем стандартное время ожидания в минуту
+        # 'TIMEOUT': 60,  # добавляем стандартное время ожидания в минуту
                         # (по умолчанию это 5 минут — 300 секунд)
         'BACKEND':
             'django.core.cache.backends.filebased.FileBasedCache',
