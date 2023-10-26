@@ -25,7 +25,7 @@ class Product(models.Model):
 
     # Добавим absolute_urls
     def get_absolute_url(self):
-        return f'/products/{self.id}'
+        return f'/products/{self.id}'  # products
         # return reverse('product_detail', args=[str(self.id)])
 
     def save(self, *args, **kwargs):
