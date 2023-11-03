@@ -7,6 +7,11 @@ from django.core.cache import cache
 
 # Товар для витрины
 class Product(models.Model):
+    """
+    Класс Product, отображает товары и имеет обязательные поля name,
+    description, quantity,
+    category, price.
+    """
     name = models.CharField(max_length=50, unique=True)
     description = models.TextField()
     quantity = models.IntegerField(
@@ -35,6 +40,10 @@ class Product(models.Model):
 
 # Категория, к которой будет привязываться товар
 class Category(models.Model):
+    """
+    Класс Category отображает категорию товара, name с максимальной
+    длиной 100 символов.
+    """
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self):
@@ -42,6 +51,11 @@ class Category(models.Model):
 
 
 class Subscriptions(models.Model):
+    """
+    Класс Подписчиков имеет два поля
+    user = models.ForeignKey to=User,
+    category = models.ForeignKey to=Category.
+    """
     user = models.ForeignKey(to=User, on_delete=models.CASCADE,
                              related_name='subscriptions')
     category = models.ForeignKey(to=Category, on_delete=models.CASCADE,
