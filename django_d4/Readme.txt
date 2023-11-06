@@ -5423,6 +5423,73 @@ python3 manage.py check --deploy
 безопасности и др. Использование этой команды может быть также полезным при
 рассмотрении вашего приложения с точки зрения безопасности.
 ---------------------------------------
+pip freeze
+Команда генерирует список всех установленных пакетов с их версиями для того
+чтобы их установить
+amqp==5.1.1
+APScheduler==3.10.4
+asgiref==3.7.2
+astroid==3.0.1
+async-timeout==4.0.3
+billiard==4.1.0
+celery==5.3.4
+certifi==2023.7.22
+cffi==1.16.0
+charset-normalizer==3.3.0
+click==8.1.7
+click-didyoumean==0.3.0
+click-plugins==1.1.1
+click-repl==0.3.0
+colorama==0.4.6
+cryptography==41.0.4
+defusedxml==0.7.1
+dill==0.3.7
+Django==4.2.6
+django-allauth==0.57.0
+django-apscheduler==0.6.2
+django-filter==23.3
+flake8==6.1.0
+idna==3.4
+isort==5.12.0
+kombu==5.3.2
+mccabe==0.7.0
+oauthlib==3.2.2
+platformdirs==3.11.0
+prompt-toolkit==3.0.39
+pycodestyle==2.11.1
+pycparser==2.21
+pyflakes==3.1.0
+PyJWT==2.8.0
+pylint==3.0.2
+python-dateutil==2.8.2
+python3-openid==3.2.0
+pytz==2023.3.post1
+redis==4.6.0
+requests==2.31.0
+requests-oauthlib==1.3.1
+six==1.16.0
+sqlparse==0.4.4
+tomli==2.0.1
+tomlkit==0.12.1
+typing_extensions==4.8.0
+tzdata==2023.3
+tzlocal==5.1
+urllib3==2.0.7
+value==0.1.0
+vine==5.0.0
+wcwidth==0.2.8
+-------------
+Создаёт файл со списком пакетов для последующей установки
+pip freeze > requirments.txt
+Устанавливаем все пакеты из файла
+pip install -r requirments.txt
+-------------
+
+-------------
+
+-------------
+
+---------------------------------------
 D_11
 ==============================================================================
 
