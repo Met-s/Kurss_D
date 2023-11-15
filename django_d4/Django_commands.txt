@@ -1,0 +1,12 @@
+python -m venv venv
+venv\scripts\activate
+source venv/bin/activate
+pip install django
+django-admin startproject project
+cd project
+python manage.py migrate
+python manage.py makemigrations
+python manage.py runserver
+python manage.py createsuperuser
+deactivate
+python manage.py startapp news
