@@ -5792,13 +5792,67 @@ python manage.py flush
 
 Если у вас несколько баз данных, то можно указать всё тот же параметр
 --database и очистить какую-то конкретную БД.
+---------------------------------------
+Написание собственных команд
+    Подробнее здесь:
+https://docs.djangoproject.com/en/3.1/howto/custom-management-commands/
 -------------
+Для того чтобы создать собственную команду надо выбрать приложение, с которым
+она будет логически связана, и создать в его папке следующую структуру,
+например так:
 
+sample_app/management/commands/<имя вашей команды>.py
 -------------
+Далее надо создать класс самой команды. Определенные методы этого класса будут
+отвечать за то или иное поведение во время выполнения вашей команды.
 
--------------
+Пример создания класса-команды:
+from django.core.management.base import BaseCommand, CommandError
 
+
+class Command(BaseCommand):
+    help = 'Подсказка вашей команды' # показывает подсказку при вводе "python manage.py <ваша команда> --help"
+    missing_args_message = 'Недостаточно аргументов'
+    requires_migrations_checks = True # напоминать ли о миграциях. Если тру — то будет напоминание о том, что не сделаны все миграции (если такие есть)
+
+    def add_arguments(self, parser):
+        # Positional arguments
+        parser.add_argument('argument', nargs='+', type=int)
+
+    def handle(self, *args, **options):
+        # здесь можете писать любой код, который выполняется при вызове вашей команды
+        self.stdout.write(str(options['argument']))
 -------------
+Запускается она также, как и любая другая команда,название вашего файла и
+есть название самой команды!
+python manage.py runmycommand
+-----Пример--------
+Создаём дерикторию с файлом в дериктории приложения там где находится
+models.py
+simpleapp/management/commands/nullfyquantity.py
+
+from django.core.management.base import BaseCommand, CommandError
+from simpleapp.models import Product
+
+class Command(BaseCommand):
+    help = "Обнуляет количество всех товаров"
+
+    def handle(self, *args, **options):
+        for product in Product.objects.all():
+            product.quantity = 10
+            product.save()
+
+            self.stdout.write(self.style.SUCCESS(
+                'Successfully nulled product "%s"' % str(product)))
+------
+self.style.SUCCESS # натпись зелёная
+self.style.ERROR   # красная
+-------------Запускаем----
+python manage.py nullfyquantity
+
+python manage.py nullfyquantity --help
+ выводит то что написанно в переменной help. Таким образом можно писать
+ документации к командам.
 
 -------------
 

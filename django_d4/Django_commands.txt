@@ -14,6 +14,11 @@ python manage.py startapp news
 python manage.py createsuperuser
 python manage.py changepassword <имя пользователя>   # Сброс пароля
     Подробнее здесь: https://docs.djangoproject.com/en/3.1/ref/django-admin/
+---------Запуск собственных команд---
+python manage.py <название файла с командой>
+python manage.py <название файла с командой> --help
+ выводит то что написанно в переменной help. Таким образом можно писать
+ документации к командам.
 ---------Работа с БД--------
 Создаёт копию БД в формате json и xml
 python -Xutf8 manage.py dumpdata --format=json --output mydata.json
