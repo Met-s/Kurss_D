@@ -1,4 +1,0 @@
-Изменил с True на False
-USE_TZ = False
-
-

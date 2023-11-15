@@ -30,10 +30,10 @@ Products
         {# Добавим кнопку отправки данных формы #}
         <input type="submit" value="Найти" />
     </form>
----------
+
     {# Теперь будем проверять не request.user.is_authenticated, а конкретные права #}
 {% if perms.simpleapp.add_product %}
-     <a href="{% url 'product_create' %}">Создать</a>
+     <a href="{% url 'product_create' %}">Добавить товар</a>
 {% endif %}
   <hr>
         {% if products %}
