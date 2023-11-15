@@ -4,9 +4,19 @@ source venv/bin/activate
 pip install django
 django-admin startproject project
 cd project
-python manage.py migrate
 python manage.py makemigrations
+python manage.py migrate
+python manage.py showmigrations — показать все изменения вносимые в базу данных.
 python manage.py runserver
 python manage.py createsuperuser
 deactivate
 python manage.py startapp news
+python manage.py createsuperuser
+python manage.py changepassword <имя пользователя>   # Сброс пароля
+    Подробнее здесь: https://docs.djangoproject.com/en/3.1/ref/django-admin/
+-------------
+Создаёт файл со списком пакетов для последующей установки
+pip freeze > requirments.txt
+Устанавливаем все пакеты из файла
+pip install -r requirments.txt
+-------------
