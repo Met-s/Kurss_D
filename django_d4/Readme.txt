@@ -906,7 +906,7 @@ products.html
 После них ойдут ошибки, которые относятся к полю поиска по названию товара
 {{ filterset.form.name__icontains.errors }}.
 Далее составляем сами заголовки (label) и поля ввода данных формы (input).
-В заголовкахуказываем для какого поля они создаются (атрибут for), а также
+В заголовках указываем для какого поля они создаются (атрибут for), а также
 текст заголовка.
 В поле ввода данных мы указываем больше информации:
 id - идентификатор элмента, по которому заголовок будет связан с данным полем;
@@ -5852,8 +5852,194 @@ python manage.py nullfyquantity
 
 python manage.py nullfyquantity --help
  выводит то что написанно в переменной help. Таким образом можно писать
- документации к командам.
+ документацию к командам.
+-------------Команда удаляет все товары------
+from django.core.management.base import BaseCommand, CommandError
+from sample_app.models import Product
 
+
+class Command(BaseCommand):
+    help = 'Подсказка вашей команды' # показывает подсказку при вводе "python manage.py <ваша команда> --help"
+    requires_migrations_checks = True # напоминать ли о миграциях. Если тру — то будет напоминание о том, что не сделаны все миграции (если такие есть)
+
+    def handle(self, *args, **options):
+        # здесь можете писать любой код, который выполнется при вызове вашей команды
+        self.stdout.readable()
+        self.stdout.write('Do you really want to delete all products? yes/no') # спрашиваем пользователя действительно ли он хочет удалить все товары
+        answer =  input() # считываем подтверждение
+
+        if answer == 'yes': # в случае подтверждения действительно удаляем все товары
+            Product.objects.all().delete()
+            self.stdout.write(self.style.SUCCESS('Succesfully wiped products!'))
+            return
+
+        self.stdout.write(self.style.ERROR('Access denied')) # в случае неправильного подтверждения, говорим что в доступе отказано
+
+-------------Тайные функции админ-панели Django-------
+Можно регистрировать модели в админке
+simpleapp/admin.py
+
+from django.contrib import admin
+from .models import Category, Product
+
+# Register your models here.
+
+admin.site.register(Category)
+admin.site.register(Product)
+
+# или разрегистрировать
+
+admin.site.unregister(Product)
+-------------
+Зделать таблицу
+admin.py
+
+from django.contrib import admin
+from .models import Category, Product
+
+# создаём новый класс для представления товаров в админке
+class ProductAdmin(admin.ModelAdmin):
+    # list_display — это список или кортеж со всеми полями, которые вы хотите видеть в таблице с товарами
+    list_display = [field.name for field in Product._meta.get_fields()] # генерируем список имён всех полей для более красивого отображения
+
+# Register your models here.
+
+admin.site.register(Category)
+admin.site.register(Product, ProductAdmin)
+-------------
+Ограничить вывод полей
+admin.py
+
+from django.contrib import admin
+from .models import Category, Product
+
+# создаём новый класс для представления товаров в админке
+class ProductAdmin(admin.ModelAdmin):
+    # list_display - это список или кортеж со всеми полями, которые вы хотите видеть в таблице с товарами
+    list_display = ('name', 'price') # оставляем только имя и цену товара
+
+# Register your models here.
+
+admin.site.register(Category)
+admin.site.register(Product, ProductAdmin)
+---------------------------------------
+К слову, поля не обязательно должны быть столбцами в БД. Например, в админке
+вполне себе можно выводить какое-либо другое поле, например property. Давайте
+допишем какое-нибудь свойство в нашу модель товаров:
+models.py
+
+class Product(models.Model):
+    """
+    Класс Product, отображает товары и имеет обязательные поля name,
+    description, quantity,
+    category, price.
+    """
+    name = models.CharField(max_length=50, unique=True)
+    description = models.TextField()
+    quantity = models.IntegerField(
+        validators=[MinValueValidator(0,
+                                      'Quantity should be >= 0')])
+    # Поле которое будет ссылаться на модель категории
+    category = models.ForeignKey(to='Category', on_delete=models.CASCADE,
+                                 related_name='products')
+    # все продукты в категории будут доступны через поле products
+    price = models.FloatField(
+        validators=[MinValueValidator(0.0,
+                                      'Price should be >= 0')])
+
+# допишем свойство, которое будет отображать есть ли товар на складе
+    @property
+    def on_stock(self):
+        """
+         Отображает есть ли товар на складе есть=True, нет=False
+        """
+        return self.quantity > 0
+
+    def __str__(self):
+        return (f'{self.category} : {self.name} : {self.quantity} :'
+                f' {self.description[:20]}')
+-------------
+Допишем это же поле в fields в админке
+admin.py
+
+from django.contrib import admin
+from .models import Category, Product
+
+class ProductAdmin(admin.ModelAdmin):
+    # list_display = [field.name for field in Product._meta.get_fields()]
+    list_display = ('name', 'price', 'quantity', 'on_stock')
+
+admin.site.register(Category)
+admin.site.register(Product, ProductAdmin)
+# admin.site.unregister(Product)  # разрегистрируем наши товары
+-------------
+Для того, чтобы начать сортировать товары, например, по цене или по имени в
+алфавитном порядке, и по любому свойству вообще, достаточно нажать по
+заголовку в таблице. Это отсортирует товары по этому свойству.
+-------------Фильтры в админке----
+admin.py
+
+class ProductAdmin(admin.ModelAdmin):
+    # list_display = [field.name for field in Product._meta.get_fields()]
+    list_display = ('name', 'price', 'quantity', 'on_stock')
+
+    list_filter = ('price', 'quantity', 'name')  # добавляем примитивные
+    фильтры в нашу админку
+-------------Группирует поо сатегории----
+admin.py
+
+class ProductAdmin(admin.ModelAdmin):
+    # list_display = [field.name for field in Product._meta.get_fields()]
+    list_display = ('name', 'price', 'quantity', 'on_stock')
+    list_filter = ('price', 'quantity', 'name')
+
+    search_fields = ('name', 'category__name')  # тут всё очень похоже на
+    фильтры из запросов в базу
+-------------
+В результате сверху у нас появилась строка, которая ищет на совпадения
+параметры, которые вы укажите в поле search_fields. Так уже гораздо удобнее,
+ можно искать как по категории, так и по названию товара
+-------------Добавление действия "обнуление выделенных объектов"-----
+admin.py
+
+from django.contrib import admin
+from .models import Category, Product
+
+# напишем уже знакомую нам функцию обнуления товара на складе
+def nullfy_quantity(modeladmin, request, queryset):  # все аргументы уже
+        должны быть вам знакомы, самые нужные из них это request — объект
+        хранящий информацию о запросе и queryset — грубо говоря набор
+        объектов, которых мы выделили галочками.
+    queryset.update(quantity=0)
+    nullfy_quantity.short_description = 'Обнулить товары'  # описание для
+        более понятного представления в админ панеле задаётся, как будто это объект
+
+
+class ProductAdmin(admin.ModelAdmin):
+    # list_display = [field.name for field in Product._meta.get_fields()]
+    list_display = ('name', 'price', 'quantity', 'on_stock')
+    list_filter = ('price', 'quantity', 'name')
+    search_fields = ('name', 'category__name')
+
+    actions = [nullfy_quantity]  # добавляем действия в список
+
+
+admin.site.register(Category)
+admin.site.register(Product, ProductAdmin)
+# admin.site.unregister(Product)  # разрегистрируем наши товары
+-------------
+нужное нам действие появилось в окошке action.
+-------------
+Похожим образом можно настроить и категории, и вообще любой другой объект.
+При регистрации главное обязательно вторым аргументом указывать класс
+модель-админа.
+    Да и не забудьте, если вы вносите изменения в админ-панель в нескольких
+приложениях, например, admin.py редактируется у вас в нескольких приложениях,
+то в случае конфликта будут применяться те изменения, приложение которого
+стоит ниже в списке INSTALLED_APPS в настройках.
+---------------------------------------
+D_12
+==============================================================================
 -------------
 
 -------------
@@ -5864,7 +6050,6 @@ python manage.py nullfyquantity --help
 
 -------------
 
--------------
 ---------------------------------------
 
 ---------------------------------------

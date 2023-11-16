@@ -16,6 +16,10 @@ class ProductForm(forms.ModelForm):
             'quantity',
         ]
 
+    def __str__(self):
+        return (f'{self.name} : {self.description} : {self.category} : '
+                f'{self.price} : {self.quantity}')
+
     def clean(self):
         cleaned_data = super().clean()
         name = cleaned_data.get("name")

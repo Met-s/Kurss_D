@@ -25,8 +25,16 @@ class Product(models.Model):
         validators=[MinValueValidator(0.0,
                                       'Price should be >= 0')])
 
+    @property
+    def on_stock(self):
+        """
+         Отображает есть ли товар на складе есть=True, нет=False
+        """
+        return self.quantity > 0
+
     def __str__(self):
-        return f'{self.category} : {self.name} : {self.description[:20]}'
+        return (f'{self.category} : {self.name} : {self.quantity} :'
+                f' {self.description[:20]}')
 
     # Добавим absolute_urls
     def get_absolute_url(self):
