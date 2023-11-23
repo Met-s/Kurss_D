@@ -13,16 +13,15 @@ class Command(BaseCommand):
                           f'которой нужно удалить')
         answer = input()
 
+    def handle(self, *args, **options):
+        self.stdout.readable()
+        self.stdout.write(
+            'Do you really want to delete all products? yes/no')
+        answer = input()
 
-        def handle(self, *args, **options):
-            self.stdout.readable()
-            self.stdout.write('Do you really want to delete all products? yes/no')
-            answer = input()
-
-            if answer == 'yes':
-                Product.objects.all().delete()
-                self.stdout.write(self.style.SUCCESS('Successfully wiped '
-                                                     'products!'))
-                return
-            self.stdout.write(self.style.ERROR('Access denied'))
-
+        if answer == 'yes':
+            Product.objects.all().delete()
+            self.stdout.write(self.style.SUCCESS('Successfully wiped '
+                                                 'products!'))
+            return
+        self.stdout.write(self.style.ERROR('Access denied'))
