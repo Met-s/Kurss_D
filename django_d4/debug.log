@@ -1,0 +1,3 @@
+INFO 2023-11-25 12:05:45,138 "GET /products/ HTTP/1.1" 200 6515
+INFO 2023-11-25 12:05:51,759 "GET /products/ HTTP/1.1" 200 6515
+INFO 2023-11-25 12:06:03,620 C:\Users\feron\Kurss_D\django_d4\django_d4\settings.py changed, reloading.
