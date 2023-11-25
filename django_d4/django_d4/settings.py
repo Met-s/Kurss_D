@@ -12,9 +12,9 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from pathlib import Path
 from config import email_host_password
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -26,7 +26,6 @@ SECRET_KEY = 'django-insecure-uok4fjhww0tka@5_sv5=8*460t8hr6$y%&z2+$!6u2baj$r1(t
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
 
 # Application definition
 
@@ -48,7 +47,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.yandex',
     'django_apscheduler',
 
-    ]
+]
 
 SITE_ID = 1
 
@@ -88,7 +87,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'django_d4.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
@@ -98,7 +96,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
@@ -118,7 +115,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
@@ -129,7 +125,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -161,7 +156,7 @@ ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
 ACCOUNT_FORMS = {"signup": "accounts.forms.CustomSignupForm"}
 
 # Настройка почты
-#"django.core.mail.backends.smtp.EmailBackend - console"
+# "django.core.mail.backends.smtp.EmailBackend - console"
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.yandex.ru'
@@ -194,12 +189,48 @@ CELERY_RESULT_SERIALIZER = 'json'
 
 CACHES = {
     'default': {
-        # 'TIMEOUT': 60,  # добавляем стандартное время ожидания в минуту
-                        # (по умолчанию это 5 минут — 300 секунд)
+        # 'TIMEOUT': 60, # добавляем стандартное время ожидания в минуту
+        # (по умолчанию это 5 минут — 300 секунд)
         'BACKEND':
             'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': os.path.join(BASE_DIR, 'cache_files') # Указываем, куда
+        'LOCATION': os.path.join(BASE_DIR, 'cache_files')  # Указываем, куда
         # будем сохранять кэшируемые файлы! Не забываем создать папку
         # cache_files внутри папки с manage.py!
+    }
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loger': False,
+    'loggers': {
+        'django': {
+            # 'handlers': ['console', 'simpleapp'],
+            'handlers': ['simpleapp'],
+            'level': 'DEBUG',
+        }
+    },
+    'handlers': {
+        # 'console': {
+        #     'class': 'logging.StreamHandler'
+        # },
+        'simpleapp': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',
+            'formatter': 'myformatter',
+            'filters': ['require_debug_false'],
+        }
+    },
+    'formatters': {
+        'myformatter': {
+            'format': '{levelname} {asctime} {message}',
+            'datetime': '%m.%d %H:%M',
+            'style': '{',
+        }
+    },
+    'filters': {
+        'require_debug_false': {
+            '()': "django.utils.log.RequireDebugFalse",
+        }
     }
 }

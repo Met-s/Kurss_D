@@ -28,6 +28,10 @@ from django.utils import timezone
 # from django.views.decorators.cache import cache_page
 # -----------------------------------------------------
 from django.core.cache import cache
+# ------------------------------D_13_Логирование-------
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ProductsList(ListView):
