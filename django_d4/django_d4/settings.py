@@ -54,6 +54,9 @@ SITE_ID = 1
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+
+    'django.middleware.locale.LocaleMiddleware',
+
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -61,6 +64,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
     'allauth.account.middleware.AccountMiddleware',
+
+
 
     # 'django.middleware.cache.UpdateCacheMiddleware',
     # 'django.middleware.common.CommonMiddleware',
@@ -118,13 +123,15 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'ru'  #'ru' 'en-us'
 
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
 USE_TZ = True
+# ----------------
+LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
@@ -168,6 +175,7 @@ EMAIL_USE_SSL = True
 DEFAULT_FROM_EMAIL = "si-mart@yandex.ru"
 EMAIL_SUBJECT_PREFIX = "DORATY : "
 
+ADMINS = [("AdminSi", "si-mart@yandex.ru")]
 SERVER_EMAIL = "si-mart@yandex.ru"
 MANAGERS = (
     ('Ivan', 'feronts@mail.ru'),
@@ -199,38 +207,43 @@ CACHES = {
     }
 }
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loger': False,
-    'loggers': {
-        'django': {
-            # 'handlers': ['console', 'simpleapp'],
-            'handlers': ['simpleapp'],
-            'level': 'DEBUG',
-        }
-    },
-    'handlers': {
-        # 'console': {
-        #     'class': 'logging.StreamHandler'
-        # },
-        'simpleapp': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': 'debug.log',
-            'formatter': 'myformatter',
-            'filters': ['require_debug_false'],
-        }
-    },
-    'formatters': {
-        'myformatter': {
-            'format': '{levelname} {asctime} {message}',
-            'datetime': '%m.%d %H:%M',
-            'style': '{',
-        }
-    },
-    'filters': {
-        'require_debug_false': {
-            '()': "django.utils.log.RequireDebugFalse",
-        }
-    }
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'loggers': {
+#         'django': {
+#             'handlers': ['email', 'simpleapp'],
+#             'level': 'INFO',
+#         }
+#     },
+#     'handlers': {
+#         # 'console': {
+#         #     'class': 'logging.StreamHandler'
+#         # },
+#         'simpleapp': {
+#             'level': 'INFO',
+#             'class': 'logging.FileHandler',
+#             'filename': 'debug.log',
+#             'formatter': 'myformatter',
+#             # 'filters': ['require_debug_false'],
+#         },
+#         'email': {
+#             'level': 'ERROR',
+#             'class': 'django.utils.log.AdminEmailHandler',
+#             # 'include_html': True,
+#             'formatter': 'myformatter',
+#         }
+#     },
+#     'formatters': {
+#         'myformatter': {
+#             'format': '{levelname} {asctime} {message}',
+#             'datetime': '%m.%d %H:%M',
+#             'style': '{',
+#         }
+#     },
+#     'filters': {
+#         'require_debug_false': {
+#             '()': "django.utils.log.RequireDebugFalse",
+#         }
+#     }
+# }

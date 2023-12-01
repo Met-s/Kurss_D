@@ -2,7 +2,8 @@
 from django.urls import path
 from .views import (
     ProductsList, ProductDetail, ProductsForm, ProductCreate,
-    ProductUpdate, ProductDelete, subscriptions,IndexView
+    ProductUpdate, ProductDelete, subscriptions, IndexView,
+
 )
 
 
@@ -22,4 +23,5 @@ urlpatterns = [
     path('<int:pk>/delete/', ProductDelete.as_view(), name='product_delete'),
     path('subscriptions/', subscriptions, name='subscriptions'),
     path('index/', IndexView.as_view()),
+
 ]

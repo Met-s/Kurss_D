@@ -7148,11 +7148,13 @@ LOGGING = {
             'format': '%(levelname)s %(message)s'
         },
     },
+
     'filters': {
         'require_debug_true': {
             '()': 'django.utils.log.RequireDebugTrue',
         },
     },
+
     'handlers': {
         'console': {
             'level': 'INFO',
@@ -7165,6 +7167,7 @@ LOGGING = {
             'class': 'django.utils.log.AdminEmailHandler'
         }
     },
+
     'loggers': {
         'django': {
             'handlers': ['console'],
@@ -7236,8 +7239,188 @@ logger = logging.getLogger(__name__)
 # (__name__) - danger_name Берёт название нашего приложения как имя логера(в
 место этого можно написать лубое своё имя которым будет называться логер)
 -------------
+Настройка Логирования из вебинара:
+settings.py
 
+LOGGING = {
+    'version': 1,
+    'disable_existing_loger': False,
+    'loggers': {
+        'django': {
+            # 'handlers': ['console', 'simpleapp'],
+            'handlers': ['simpleapp'],
+            'level': 'DEBUG',
+        }
+    },
+    'handlers': {
+        # 'console': {
+        #     'class': 'logging.StreamHandler'
+        # },
+        'simpleapp': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'debug.log',
+            'formatter': 'myformatter',
+            'filters': ['require_debug_false'],
+        }
+    },
+    'formatters': {
+        'myformatter': {
+            'format': '{levelname} {asctime} {message}',
+            'datetime': '%m.%d %H:%M',
+            'style': '{',
+        }
+    },
+    'filters': {
+        'require_debug_false': {
+            '()': "django.utils.log.RequireDebugFalse",
+        }
+    }
+}
+---------------------------------------
+Чтобы письма отправлялись на почту нужно в settings.py добавить
+
+ADMINS = [("AdminSi", "si-mart@yandex.ru")]
+подробнее здесь https://docs.djangoproject.com/en/4.2/ref/settings/#admins
+---------------
+Логирование подробнее здесь:
+https://docs.djangoproject.com/en/4.2/topics/logging/#logging-security-implications
+---------------------------------------
+D_14 Локализация и интернационализация                                   D_14
+==============================================================================
+Локализация в Django — это язык конечного пользователя.(перевод)
+Во-вторых, локализация — это время.
+    В основном задача локализации времени заключается в том, чтобы показывать
+текущее время пользователя на странице или же менять тему в зависимости от
+времени суток конечного пользователя. Наверняка замечали, что на некоторых
+сайтах ночью оформление меняется на тёмное, днем — на светлое, или же меняется
+задний фон сайта и т. д.
 -------------
+settings.py
+USE_I18N = True
+
+Эта строчка говорит нам о том, что интернационализации будут поддерживаться в
+нашем приложении. В значение True она выставлена по дефолту
+-------------
+Также понадобится установить утилиту для переводов — gettext.
+-------------
+На Linux пишем в терминале:                                            Linux
+
+sudo apt-get install gettext
+-------------Установка на Windows--------
+Скачал :
+gettext0.21-iconv1.16-shared-64.exe
+gettext0.21-iconv1.16-static-64.exe
+от сюда:
+gettext 0.21 and iconv 1.16 - Binaries for Windows | mlocati - Michele Locati
+https://mlocati.github.io/articles/gettext-iconv-windows.html
+
+Установил по очереди, перезапустил PyCharm.
+-------------
+Добавил в:
+settings.py
+
+LOCALE_PATHS = [
+    os.path.join(BASE_DIR, 'locale')
+]
+--------------------------
+MIDDLEWARE = [
+'django.middleware.security.SecurityMiddleware',
+'django.contrib.sessions.middleware.SessionMiddleware',
+
+'django.middleware.locale.LocaleMiddleware', # добавил вот эту строку
+-------------
+Создал папку locale в корне проекта C:\Users\feron\Kurss_D\django_d4\locale
+(название папки должно совпадать с " os.path.join(BASE_DIR, 'locale' ")
+--------------------------
+Перевод текстовой информации в шаблонах
+
+К такому виду текстов относятся, например, текст в заголовках таблиц, шапке
+сайта и т. д. Иными словами, это всё, что почти никак не относится к нашим
+моделям.
+Подробнее здесь: Translation | Django documentation | Django
+https://docs.djangoproject.com/en/3.1/topics/i18n/translation/
+-------------
+Создадим простую view-функцию, которая будет переводить нам только одну строку
+
+views.py
+
+from django.utils.translation import gettext as _
+# импортируем функцию для перевода
+
+# Create your views here.
+
+class Index(View):
+    def get(self, request):
+        string = _('Hello world')
+
+        return HttpResponse(string)
+-------------
+Для того чтобы создать файл перевода на какой-либо язык, надо ввести следующую
+команду в терминале в папке с manage.py файлом:
+
+python manage.py makemessages -l <код языка*>
+
+python manage.py makemessages -l ru
+
+*код языка — это сокращение от его официального названия на английском,
+например, русский язык — ru, английский — en и т. д.
+-------------
+Теперь, после того как вы ввели эту команду, у вас должен появиться новый
+файл в папке locale:
+locale/ru/LC_MESSAGES/django.po
+
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+
+..........
+
+#: .\simpleapp\views.py:238
+msgid "Hello world"
+msgstr ""
+-------------
+Этот файл содержит в себе инструкции по распознаванию перевода. По большей
+части, это инструкции для компилятора переводов.Главное, что здесь надо знать,
+ это следующую структуру:
+--
+ # <путь к файлу в котором вызвана функция gettext, либо же особый тег в
+ шаблонах(о них чуть позже)>
+msgid: «<оригинальный текст>»
+msgstr: «<текст с переводом на нужный язык>»
+-------------
+В нашем же случае это будет выглядеть так:
+
+#: .\simpleapp\views.py:238
+msgid "Hello world"
+msgstr "Привет мир"  # Привет мир нужно написать самому
+
+Django самостоятельно переводить не умеет, так-что переводить текст нужно
+самостоятельно (ручкаами), а он потом этот перевод подставит сам.
+-------------
+После чего нам надо выполнить следующую команду:
+
+python manage.py compilemessages    # так рекомендуют в юните
+django-admin compilemessages -l ru  # так писал в ролике
+-------------
+Теперь у нас появился в той же директории, что и django.po,
+новый файл — django.mo. Если так оно и произошло, и никакой ошибки не было,
+то всё должно работать. Теперь давайте в настройках поставим русский язык и
+попробуем перезапустить страницу.
+
+settings.py
+
+LANGUAGE_CODE = 'ru'
+
+Теперь в строке браузера мы должны увидеть:
+
+Привет мир
+-------------
+ВНИМАНИЕ: если вы не получили перевод на русский, то, скорее всего, у вас
+стоит английский язык в браузере, при перестановке языка на русский всё должно
+заработать.
+--------------------------
+
 
 -------------
 

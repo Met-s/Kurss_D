@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from simpleapp.views import multiply
+from simpleapp.views import multiply, Index
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,5 +28,5 @@ urlpatterns = [
     # path('accounts/', include('django.contrib.auth.urls')),
     # path('accounts/', include('accounts.urls')),  # Добавил
     path('accounts/', include('allauth.urls')),
-
+    path('indexleng/', Index.as_view()),
 ]

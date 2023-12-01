@@ -19,7 +19,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
 from pprint import pprint
 # ------------------------------------------------------
-# # from django.http import HttpResponse
+from django.http import HttpResponse
 from django.views import View
 from .tasks import hello, printer
 from datetime import datetime, timedelta
@@ -30,6 +30,9 @@ from django.utils import timezone
 from django.core.cache import cache
 # ------------------------------D_13_Логирование-------
 import logging
+# ---------------D_14_Перевод---------
+from django.utils.translation import gettext as _
+# импортируем функцию для перевода
 
 logger = logging.getLogger(__name__)
 
@@ -228,3 +231,15 @@ class IndexView(View):
         # printer.apply_async([10], eta=timezone.now() + timedelta(seconds=5))
         hello.delay()
         return HttpResponse('Hello!!!!')
+
+
+class Index(View):
+    """
+    Пример перевода.
+    Простая view-функция, которая переводит только одну строку.
+    Эта функция просто вернёт нам строку 'Hello world' в наш браузер,
+    """
+    def get(self, request):
+        string = _('Hello world')
+
+        return HttpResponse(string)
