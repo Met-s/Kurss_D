@@ -3,6 +3,9 @@ from django.core.validators import MinValueValidator
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.core.cache import cache
+from django.utils.translation import gettext as _
+from django.utils.translation import pgettext_lazy
+# импортируем «ленивый» геттекст с подсказкой
 
 
 # Товар для витрины
@@ -19,7 +22,10 @@ class Product(models.Model):
                                       'Quantity should be >= 0')])
     # Поле которое будет ссылаться на модель категории
     category = models.ForeignKey(to='Category', on_delete=models.CASCADE,
-                                 related_name='products')
+                                 related_name='products',
+                                 verbose_name=pgettext_lazy(
+                                     'help text for Product model',
+                                     'This is the help text'))
     # все продукты в категории будут доступны через поле products
     price = models.FloatField(
         validators=[MinValueValidator(0.0,
@@ -52,7 +58,9 @@ class Category(models.Model):
     Класс Category отображает категорию товара, name с максимальной
     длиной 100 символов.
     """
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100, unique=True,
+                            help_text=_('category name'))  # добавим
+    # переводящийся текст подсказку к полю
 
     def __str__(self):
         return f'{self.name.title()}'

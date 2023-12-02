@@ -32,6 +32,7 @@ from django.core.cache import cache
 import logging
 # ---------------D_14_Перевод---------
 from django.utils.translation import gettext as _
+
 # импортируем функцию для перевода
 
 logger = logging.getLogger(__name__)
@@ -239,7 +240,12 @@ class Index(View):
     Простая view-функция, которая переводит только одну строку.
     Эта функция просто вернёт нам строку 'Hello world' в наш браузер,
     """
+
     def get(self, request):
+        # . Translators: This message appears on the home page only
         string = _('Hello world')
 
-        return HttpResponse(string)
+        # return HttpResponse(string)
+        context = {'string': string}
+        return HttpResponse(render(request,
+                                   'translation.html', context))
