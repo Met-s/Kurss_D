@@ -26,7 +26,13 @@
         </select>
         <input type="submit" value="set">
     </form>
-    <h1>{{ string }}</h1>
-    {% trans "Check out my new cool translation" %}!
+
+        {% for model in models %}
+        <div class="model-class">
+            {{ model.name }}
+            {{ model.category }}
+            {{ model.description }}
+        </div>
+        {% endfor %}
 </body>
 </html>

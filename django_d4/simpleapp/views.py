@@ -242,10 +242,16 @@ class Index(View):
     """
 
     def get(self, request):
-        # . Translators: This message appears on the home page only
-        string = _('Hello world')
-
-        # return HttpResponse(string)
-        context = {'string': string}
+        models = Product.objects.all()
+        context = {'models': models}
         return HttpResponse(render(request,
                                    'translation.html', context))
+
+
+        # . Translators: This message appears on the home page only
+        # string = _('Hello world')
+        #
+        # # return HttpResponse(string)
+        # context = {'string': string}
+        # return HttpResponse(render(request,
+        #                            'translation.html', context))

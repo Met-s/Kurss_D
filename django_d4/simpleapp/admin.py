@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import Category, Product
+from modeltranslation.admin import TranslationAdmin
 
 
 def nullfy_quantity(modeladmin, request, queryset):
@@ -15,6 +16,14 @@ class ProductAdmin(admin.ModelAdmin):
     actions = [nullfy_quantity]
 
 
-admin.site.register(Category)
+class ProductAdmin(TranslationAdmin):
+    model = Product
+
+
+class CategoryAdmin(TranslationAdmin):
+    model = Category
+
+
+admin.site.register(Category, CategoryAdmin)
 admin.site.register(Product, ProductAdmin)
 # admin.site.unregister(Product)  # разрегистрируем наши товары
