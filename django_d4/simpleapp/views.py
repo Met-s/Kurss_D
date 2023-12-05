@@ -19,7 +19,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
 from pprint import pprint
 # ------------------------------------------------------
-from django.http import HttpResponse
+from django.http.response import HttpResponse
 from django.views import View
 from .tasks import hello, printer
 from datetime import datetime, timedelta
@@ -32,8 +32,16 @@ from django.core.cache import cache
 import logging
 # ---------------D_14_Перевод---------
 from django.utils.translation import gettext as _
-
 # импортируем функцию для перевода
+# from django.utils.translation import (activate,
+#                                       get_supported_language_variant,
+#                                       LANGUAGE_SESSION_KEY)
+from django.utils import timezone
+from django.shortcuts import redirect
+import pytz
+
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -243,10 +251,17 @@ class Index(View):
 
     def get(self, request):
         models = Product.objects.all()
-        context = {'models': models}
+
+        context = {'models': models,
+                   'current_time': timezone.localtime(timezone.now()),
+                   'timezones': pytz.common_timezones
+                   }
         return HttpResponse(render(request,
                                    'translation.html', context))
 
+    def post(self, request):
+        request.session['django_timezone'] = request.POST['timezone']
+        return redirect('/')
 
         # . Translators: This message appears on the home page only
         # string = _('Hello world')

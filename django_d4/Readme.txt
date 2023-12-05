@@ -7524,7 +7524,7 @@ class Index(View):
         return HttpResponse(render(request,
                                    'translation.html', context))
 -------------
-Добавил словарь с я зыками в
+Добавил словарь с языками в
 settings.py
 
 Это ыло
@@ -7664,17 +7664,296 @@ LANGUAGES = [
 переводить, Для этого создадим в папке с приложением файл translation.py и
 запишем в него следующие строки:
 
+simpleapp/translation.py
 
+from .models import Product, Category
+from modeltranslation.translator import register, TranslationOptions
+
+@register(Product)
+class ProductTranslationOptions(TranslationOptions):
+    fields = ('name', 'description', 'category')
+
+@register(Category)
+class CategoryTranslationOptions(TranslationOptions):
+    fields = ('name',)
 -------------
+Теперь нам надо зарегистрировать наш перевод в админ-панели.
 
+admin.py
+
+from modeltranslation.admin import TranslationAdmin # импортируем модель
+амдинки (вспоминаем модуль про переопределение стандартных админ-инструментов)
+
+class ProductAdmin(TranslationAdmin):
+    model = Product
+
+class CategoryAdmin(TranslationAdmin):
+    model = Category
+
+admin.site.register(Category, CategoryAdmin)
+admin.site.register(Product, ProductAdmin)
+-------------
+После всех этих операций нужно сделать миграции, чтобы в базу данных
+добавились новые поля, а затем применить изменения.
+-------------
+Поскольку у нас уже были записи в базе данных, надо будет ввести команду
+update_translation_fields.
+-------------
+Нужно отредактировать наше представление, чтобы мы могли получить доступ к
+объектам из шаблонов.
+
+simpleapp/views.py
+
+lass Index(View):
+    """
+    Пример перевода.
+    Простая view-функция, которая переводит только одну строку.
+    Эта функция просто вернёт нам строку 'Hello world' в наш браузер,
+    """
+
+    def get(self, request):
+        models = Product.objects.all()
+        context = {'models': models}
+        return HttpResponse(render(request,
+                                   'translation.html', context))
+-------------
+В сам шаблон надо внести изменения, чтобы можно было увидеть те самые данные,
+которые мы переводим.
+
+translation.html
+
+{% load i18n %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Перевод</title>
+</head>
+<body>
+    <form action="{% url 'set_language' %}" method="POST"> {% csrf_token %}  <!-- Не забываем по csrf_token для POST-запросов -->
+        <input type="hidden" name="next" value="{{ redirect_to }}">
+            {% get_current_language as LANGUAGE_CODE %}
+            <select name="language" id="">
+
+            {% get_available_languages as LANGUAGES %}  <!-- получаем языки -->
+            {% get_language_info_list for LANGUAGES as languages %}  <!-- Помещаем их в список languages -->
+
+                {% for language in languages %}  <!-- Итерируясь по списку, выводим их название на языке пользователя и код -->
+                    <option value="{{ language.code }}"
+                            {% if language.code == LANGUAGE_CODE %} selected
+                            {% endif %}>
+                        {{ language.name_local }} - {{ language.code }}
+                    </option>
+                {% endfor %}
+             </select>
+        <input type="submit" value="set">
+    </form>
+
+        {% for model in models %}
+        <div class="model-class">
+            {{ model.name }}
+            {{ model.category }}
+            {{ model.description }}
+        </div>
+        {% endfor %}
+</body>
+</html>
+-------------
+Всё готово. Теперь на главной странице должны показываться имена объекта
+Product, которые уже лежали у нас в базе данных. Сейчас, даже если мы
+переключим язык на русский
+Ничего не произошло, т. к. мы не вписали нужные строки для перевода в
+соответствующие поля.В админ панели.
 ---------------------------------------
 Локализация времени
 
+Первое, что нам приходит на ум, когда надо достать текущее время, — это
+использовать стандартный питоновский модуль datetime.
+
+from datetime import datetime
+
+# Create your views here.
+class Index(View):
+    def get(self, request):
+
+        curent_time = datetime.now()
+
+Но этот подход не совсем правильный.Он берёт местное время сервера, на котором
+расположено приложение.
+
+Для того чтобы иметь возможность менять часовые пояса и получать время в том
+или ином поясе, надо использовать инструменты Django.
+
+rom django.utils import timezone
+
+
+class Index(View):
+    def get(self, request):
+
+        curent_time = timezone.now()
+-------------
+Подробнее здесь:
+Time zones | Django documentation | Django
+https://docs.djangoproject.com/en/3.1/topics/i18n/timezones/
+-------------
+Сперва создадим middleware для обработки часовых поясов.
+simpleapp/middlewares.py
+
+import pytz
+from django.utils import timezone
+
+
+class TimezoneMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        tzname = request.session.get('django_timezone')    # пытаемся забрать
+        часовой пояс из сессии если он есть в сессии, то выставляем такой
+        часовой пояс. Если же его нет, значит он не установлен, и часовой
+        пояс надо выставить по умолчанию (на время сервера)
+        if tzname:
+            timezone.activate(pytz.timezone(tzname))
+        else:
+            timezone.deactivate()
+        return self.get_response(request)
+-------------
+Не забываем подключить его в настройках.
+
+MIDDLEWARE = [
+.....
+    'allauth.account.middleware.AccountMiddleware',
+    'simpleapp.middlewares.TimezoneMiddleware', # add that middleware!
+    ]
+-------------
+Теперь поменяем наше представление, чтобы можно было получать все доступные
+часовые пояса.
+
+views.py
+
+from django.shortcuts import render
+from django.views import View
+from django.http.response import HttpResponse #  импортируем респонс для проверки текста
+
+from django.utils.translation import gettext as _ #  импортируем функцию для перевода
+from django.utils.translation import activate, get_supported_language_variant, LANGUAGE_SESSION_KEY
+
+from .models import Category, MyModel
+
+from django.utils import timezone
+from django.shortcuts import redirect
+
+
+import pytz #  импортируем стандартный модуль для работы с часовыми поясами
+
+    def get(self, request):
+
+    #.  Translators: This message appears on the home page only
+        models = Product.objects.all()
+
+        context = {'models': models,
+                   'current_time': timezone.localtime(timezone.now()),
+                   'timezones': pytz.common_timezones #  добавляем в контекст
+                   все доступные часовые пояса
+
+                   }
+        return HttpResponse(render(request,
+                                   'translation.html', context))
+     #  по пост-запросу будем добавлять в сессию часовой пояс, который и будет
+     обрабатываться написанным нами ранее middleware
+
+    def post(self, request):
+        request.session['django_timezone'] = request.POST['timezone']
+        return redirect('/')
+-------------
+Нам осталось добавить все необходимые формы в шаблон.
+
+translation.html
+
+{% load i18n %}
+{% load tz %}
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Перевод</title>
+</head>
+<body>
+    <form action="{% url 'set_language' %}" method="POST"> {% csrf_token %} <!-- Не забываем по csrf_token для POST запросов -->
+        <input type="hidden" name="next" value="{{ redirect_to }}">
+            {% get_current_language as LANGUAGE_CODE %}
+            <select name="language" id="">
+
+            {% get_available_languages as LANGUAGES %}  <!-- получаем языки -->
+            {% get_language_info_list for LANGUAGES as languages %} <!-- Помещаем их в список languages -->
+
+                {% for language in languages %} <!-- Итерируясь по списку, выводим их название на языке пользователя и код -->
+                    <option value="{{ language.code }}"
+                            {% if language.code == LANGUAGE_CODE %} selected
+                            {% endif %}>
+                        {{ language.name_local }} - {{ language.code }}
+                    </option>
+                {% endfor %}
+             </select>
+        <input type="submit" value="set">
+    </form>
+
+    {% get_current_timezone as TIME_ZONE %}
+    <form action="" method="POST">
+        {% csrf_token %}
+        <label for="timezone">Time zone:</label>
+        <select name="timezone">
+            {% for tz in timezones %}
+            <option value="{{ tz }}"{% if tz == TIME_ZONE %}selected
+            {% endif %}>{{ tz }}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="Set">
+    </form>
+
+    {{ TIME_ZONE }}
+    {{ current_time|timezone:TIME_ZONE }}  <!-- Отображаем время в выбранном часовом поясе  -->
+
+        {% for model in models %}
+        <div class="model-class">
+            {{ model.name }}
+            {{ model.category }}
+            {{ model.description }}
+        </div>
+        {% endfor %}
+</body>
+</html>
+-------------
+Теперь открываем главную страницу.
+Время меняется в зависимости от часового пояса.
+---------------------------------------
+В зависимости от времени у нас будет меняться оформление сайта.
+Для этого поменяем наш шаблон:
+translation.html
+
+<title>Перевод</title>
+
+<!-- Если сейчас больше чем 19 или же меньше 7, то выводим тёмную тему,
+иначе выводим светлую -->
+        <style>
+        body {background-color: {% if current_time.hour >= 19 or current_time.hour <= 7 %} darkcyan {% else %} powderblue {% endif %};}
+    </style>
+
+</head>
+<body>
+    <form action="{% url 'set_language' %}" method="POST"> {% csrf_token %}
+-------------
+Вот и всё, готова автоматически переключающаяся тёмная тема. Конечно же, это
+очень упрощённый вариант, но самое главное — мы научились делать локализацию
+времени для нашего сайта.
 -------------
 
 -------------
 
--------------
 
 -------------
 
@@ -7692,5 +7971,8 @@ LANGUAGES = [
 
 ---------------------------------------
 
----------------------------------------
+-------------
 
+-------------
+
+-------------

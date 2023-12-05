@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-02 14:18+0300\n"
+"POT-Creation-Date: 2023-12-03 13:42+0300\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,9 +16,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n"
-"%100>=11 && n%100<=14)? 2 : 3);\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: .\Readme.txt:2696 .\templates\account\email\email_confirmation_message.txt:6
 #, python-format
@@ -32,23 +30,30 @@ msgid ""
 "Хорошего дня!\n"
 msgstr ""
 
+#: .\Readme.txt:7494
+msgid "<Текст, который нужно перевести>"
+msgstr ""
+
+#: .\Readme.txt:7498
+msgid "myvar"
+msgstr ""
+
+#: .\Readme.txt:7503
+msgid "I will translate that"
+msgstr ""
+
+#: .\Readme.txt:7553 .\Readme.txt:7614
+msgid "Check out my new cool translation"
+msgstr ""
+
 #: .\simpleapp\models.py:28
 msgctxt "help text for Product model"
 msgid "This is the help text"
-msgstr "Это вспомогательный текст"
+msgstr ""
 
 #: .\simpleapp\models.py:62
 msgid "category name"
-msgstr "Имя категории"
-
-#. Translators: This message appears on the home page only
-#: .\simpleapp\views.py:246
-msgid "Hello world"
-msgstr "Привет Мир"
-
-#: .\templates\translation.html:29
-msgid "Check out my new cool translation"
-msgstr "Зацени мой перевод"
+msgstr "категория имя"
 
 #: .\venv\Lib\site-packages\click\_termui_impl.py:518
 #, python-brace-format
@@ -77,7 +82,7 @@ msgstr ""
 
 #: .\venv\Lib\site-packages\click\core.py:1387
 msgid "Options"
-msgstr ""
+msgstr "Опции"
 
 #: .\venv\Lib\site-packages\click\core.py:1413
 #, python-brace-format
@@ -714,7 +719,7 @@ msgstr ""
 
 #: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2456
 msgid "Time"
-msgstr "Время"
+msgstr ""
 
 #: .\venv\Lib\site-packages\django\db\models\fields\__init__.py:2564
 msgid "URL"
@@ -735,7 +740,7 @@ msgstr ""
 
 #: .\venv\Lib\site-packages\django\db\models\fields\files.py:232
 msgid "File"
-msgstr "Файл"
+msgstr ""
 
 #: .\venv\Lib\site-packages\django\db\models\fields\files.py:393
 msgid "Image"
@@ -903,11 +908,11 @@ msgstr[1] ""
 #: .\venv\Lib\site-packages\django\forms\formsets.py:484
 #: .\venv\Lib\site-packages\django\forms\formsets.py:491
 msgid "Order"
-msgstr "Ордер"
+msgstr ""
 
 #: .\venv\Lib\site-packages\django\forms\formsets.py:499
 msgid "Delete"
-msgstr "Удалить"
+msgstr ""
 
 #: .\venv\Lib\site-packages\django\forms\models.py:886
 #, python-format
@@ -1038,31 +1043,31 @@ msgstr ""
 
 #: .\venv\Lib\site-packages\django\utils\dates.py:7
 msgid "Monday"
-msgstr "Понедельник"
+msgstr ""
 
 #: .\venv\Lib\site-packages\django\utils\dates.py:8
 msgid "Tuesday"
-msgstr "Вторник"
+msgstr ""
 
 #: .\venv\Lib\site-packages\django\utils\dates.py:9
 msgid "Wednesday"
-msgstr "Среда"
+msgstr ""
 
 #: .\venv\Lib\site-packages\django\utils\dates.py:10
 msgid "Thursday"
-msgstr "Четверг"
+msgstr ""
 
 #: .\venv\Lib\site-packages\django\utils\dates.py:11
 msgid "Friday"
-msgstr "Пятница"
+msgstr ""
 
 #: .\venv\Lib\site-packages\django\utils\dates.py:12
 msgid "Saturday"
-msgstr "Субота"
+msgstr ""
 
 #: .\venv\Lib\site-packages\django\utils\dates.py:13
 msgid "Sunday"
-msgstr "Воскресенье"
+msgstr ""
 
 #: .\venv\Lib\site-packages\django\utils\dates.py:16
 msgid "Mon"
@@ -1624,4 +1629,8 @@ msgstr ""
 #: .\venv\Lib\site-packages\kombu\transport\qpid.py:1334
 #, python-format
 msgid "Unable to connect to qpid with SASL mechanism %s"
+msgstr ""
+
+#: .\venv\Lib\site-packages\modeltranslation\widgets.py:24
+msgid "None"
 msgstr ""
