@@ -261,7 +261,12 @@ class Index(View):
 
     def post(self, request):
         request.session['django_timezone'] = request.POST['timezone']
-        return redirect('/')
+
+        return redirect('indexleng')
+
+
+        # return redirect(request.Meta.get('HTTP_REFERER'))
+
 
         # . Translators: This message appears on the home page only
         # string = _('Hello world')
