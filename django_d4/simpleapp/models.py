@@ -3,8 +3,8 @@ from django.core.validators import MinValueValidator
 from django.urls import reverse
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.utils.translation import gettext as _
-from django.utils.translation import pgettext_lazy
+from django.utils.translation import gettext as _, pgettext_lazy
+# from django.utils.translation import
 # импортируем «ленивый» геттекст с подсказкой
 
 

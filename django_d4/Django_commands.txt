@@ -38,4 +38,5 @@ python manage.py makemessages -l ru
 django-admin compilemessages -l ru
 Запуск сервера
 py manage.py runserver
+python manage.py update_translation_fields
 -------------
