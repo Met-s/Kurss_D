@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.yandex',
     'django_apscheduler',
+    'rest_framework',
 
 ]
 

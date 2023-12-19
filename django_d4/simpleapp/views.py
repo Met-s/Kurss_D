@@ -39,6 +39,13 @@ from django.utils.translation import gettext as _
 from django.utils import timezone
 from django.shortcuts import redirect
 import pytz
+# ---------------D_15------------
+from django.shortcuts import render
+from rest_framework import viewsets
+from rest_framework import permissions
+from simpleapp.serializers import *
+from simpleapp.models import *
+
 
 
 
@@ -264,10 +271,7 @@ class Index(View):
 
         return redirect('indexleng')
 
-
         # return redirect(request.Meta.get('HTTP_REFERER'))
-
-
         # . Translators: This message appears on the home page only
         # string = _('Hello world')
         #
@@ -275,3 +279,17 @@ class Index(View):
         # context = {'string': string}
         # return HttpResponse(render(request,
         #                            'translation.html', context))
+
+
+class ProductViewset(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+
+
+class CategoryViewset(viewsets.ModelViewSet):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
+# class SubscriptionsViewset(viewsets.ReadOnlyModelViewSet):
+#     queryset = SubscriptionsSerializer

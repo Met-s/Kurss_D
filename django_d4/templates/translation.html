@@ -13,6 +13,8 @@
 
 </head>
 <body>
+<h1>{% trans "Check out my new cool translation" %}!</h1>
+
     <form action="{% url 'set_language' %}" method="POST"> {% csrf_token %}
         <input type="hidden" name="next" value="{{ redirect_to }}">
             {% get_current_language as LANGUAGE_CODE %}

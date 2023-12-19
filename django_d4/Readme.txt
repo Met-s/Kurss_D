@@ -7491,16 +7491,16 @@ python manage.py makemessages -l ru
 -------------
 Теперь вам будет доступен тэг для перевода, который формируется примерно так:
 
-{% trans "<Текст, который нужно перевести>" <дополнительные аргументы>  %}!
+c!
 
 К дополнительным аргументам здесь можно отнести, например, noop:
 
-{% trans "myvar" noop %}
+{% translate "myvar" noop %}
 
 Noop в данном случае срабатывает как заглушка, переводя переменную myvar,
 перевод которой пока не готов.
 
-{% trans "I will translate that" as trans_var %}
+{% translate "I will translate that" as trans_var %}
 
 В данном случае текст, записанный в кавычках, переведётся и запишется в
 переменную trans_var, которую в дальнейшем можно будет использовать в шаблоне.
@@ -7527,7 +7527,7 @@ class Index(View):
 Добавил словарь с языками в
 settings.py
 
-Это ыло
+Это было
 # LANGUAGE_CODE = 'ru'  #'ru' 'en-us'
 
 Это стало
@@ -8135,26 +8135,715 @@ username=theOne&email=theone@example.com
 Слишком много методов, и не понятно, как с ними быть? Как раз для этого и
 придумали REST!
 -------------
----------------------------------------
+REST расшифровывается как REpresentational State Transfer, что переводится
+как «передача состояния представления».
 
+REST — это архитектурный стиль взаимодействия компонентов по сети, например,
+бэкенда и фронтенда.
+
+REST базируется на протоколе HTTP и использует методы HTTP для создания,
+удаления и изменения сущностей.
+
+Можно было бы сказать, что REST — это протокол, построенный поверх HTTP, но
+для REST нет единого стандарта, как для HTTP. Это скорее соглашение о том,
+как наилучшим образом его использовать.
+
+Сервисы, построены по принципам REST, называют RESTful.
 -------------
-
+Зачем же он нужен?
+Во-первых, чтобы разработчики, работающие над сервисом, могли быстро
+договориться, как должен происходить обмен сообщениями. Это что-то вроде языка,
+на котором могут общаться разработчики различных компонентов.
+Например, бэкендер использует и знает Python, фронтендер — JavaScript,
+мобильные разработчики знают Java или Swift, а менеджер проекта когда-то знал
+С++, но уже давно забыл.
+Но если все они знают, как устроен REST, то им будет гораздо проще понять друг
+друга и разработать идеальный API.
 -------------
+Принципы REST
 
+1. Разделение архитектуры на клиента и сервер
+2. Отсутствие состояния
+    Сервер не знает ничего о состоянии клиента, а клиент о состоянии сервера.
+3. Кэширование
+    Клиент может кэшировать ответы сервера. Сервер же должен явно или неявно
+    обозначать кэшируемые ответы.
+4. Единообразие интерфейса
+    REST описывает, в каком формате клиент должен отсылать запрос, а сервер
+    отдавать.
+5. Слои
+    Это иерархическая архитектура ресурсов. Каждый слой содержит компоненты,
+    которые используют сервисы компонентов ниже.
+    Давайте рассмотрим реализацию на примере нашего новостного сервиса. Мы
+    можем представить эту структуру слоёв как Автор-> Пост-> Комментарий.
+    Таким образом, у нас есть три слоя: Автор, Пост и Комментарий, позволяющих
+    как разграничить права доступа, так и сделать систему масштабируемой.
+---------------------------------------
+URI, ресурсы и запросы
 
+Каждый HTTP-запрос состоит из следующих составляющих:
+• HTTP-метод,
+• заголовок,
+• URI,
+• тело запроса.
+
+Ресурсы — это всё, чему можно дать имя.
+Можно произвести аналогию с моделями в Django, но ресурсами могут быть также
+изображения или видео.
+URI в REST принято называть множественной формой существительного.
+
+Продолжим наш пример со школами и учениками:
+• /schools — URI всех школ;
+• /schools/76 — URI-информация о школе с id=76.
+Для работы с классами:
+• /schools/76/classes/ — информация обо всех классах с id=76;
+• /schools/76/classes/2/ — информация о классе с id=2.
+Ну и в эту цепочку можно добавить учеников:
+• /schools/76/classes/2/students — информация обо всех учениках класса;
+• /schools/76/classes/2/students/7 — информация о конкретном ученике.
+Помимо этого REST допускает обращение напрямую, если нам не нужно собирать
+информацию о школе и классе:
+• /students/7 — информация об ученике по его id;
+• /students/ — URI для всех учеников.
 -------------
+HTTP-методы
 
+Обращение к REST-ресурсам происходит с использованием HTTP-методов:
+
+• GET — получение информации о конкретном ресурсе.
+• POST — создание нового ресурса.
+• PUT — изменение ресурса (по ID).
+• PATCH — частичное изменение ресурса.
+• DELETE — удаление ресурса.
 -------------
-
+Примеры запросов и ответов
 -------------
+REST допускает обмен данными в разных форматах. В последнее время JSON стал
+практически стандартом, хотя возможно использование и XML, HTML и даже
+некоторых бинарных форматов, вроде protobuf.
 
----------------------------------------
+Но мы будем использовать JSON.
 
----------------------------------------
+Чтобы получить информацию обо всех школах клиент шлёт запрос:
 
----------------------------------------
+GET /schools
+Accept: application/json
+Параметр Accept заголовка определяет, в каком формате клиент ждёт ответ.
+В данном случае ответ будет вида:
 
+200 OK
+Content-Type: application/json
+
+[
+	{
+    	"id": 1,
+    	"name": "State School number one",
+    	"address": "Main street, building 7"
+	},
+	{
+    	"id": 7 ,
+    	"name": "Very good school",
+    	"address": "Main street building 7"
+	},
+	...
+]
+-------------
+Если нужно добавить новую школу, то нужно послать запрос вида:
+
+POST /schools
+Accept: application/json
+Content-Type: application/json
+
+{
+    	"name": "Very new school",
+    	"address": "New street, building 1"
+}
+Ответ будет содержать информацию о созданной школе:
+
+201 Created
+Content-Type: application/json
+
+{
+	"Id": 12,
+    	"name": "Very new school",
+    	"address": "New street, building 1"
+}
+Код ответа 201 Created информирует клиента о том, что объект был создан.
+-------------
+Если школа закрывается, то можно её удалить:
+
+DELETE /schools/12
+Accept: application/json
+Content-Type: application/json
+
+{
+	"Id": 12,
+    	"name": "Very new school",
+    	"address": "New street, building 1"
+}
+
+В данном случае мы возвращаем информацию об удаленном ресурсе.
+-------------
+Если же школа была переименована, то можно воспользоваться методом PATCH:
+
+PATCH /schools/7
+Accept: application/json
+Content-Type: application/json
+
+{
+	"name": "Greatest school ever",
+}
+
+ВАЖНО:
+Для этой операции мы можем воспользоваться и методом PUT, но тогда нам
+придется прислать все поля объекта, даже если мы не планируем их изменять.
 ---------------------------------------
+Примущества REST
+
+1. Производительность.
+    За счёт использования кэша.
+2. Масштабируемость.
+    Мы можем использовать промежуточный сервер, который перенаправляет запрос.
+    Например, в приведённом примере мы можем не хранить информацию обо всех
+    учениках всех школ на одном сервере, а получать эту информацию от
+    отдельных локальных сервисов (например, школа может иметь свой сервер для
+    данной информации).
+3. Прозрачность взаимодействия.
+4. Простота интерфейсов.
+5. Легкость внесения изменений.
+    Кроме того для REST существует множество готовых решений, позволяющих
+    ускорить разработку RESTful-сервисов, например, таких, как
+    Django Rest Framework.
+---------------------------------------
+OpenAPI
+-------------
+OpenAPI позволяет быстро и точно описать, какие вопросы можно отправить
+серверу и какой ждать ответ.
+Спецификация OpenAPI представляет из себя файл в формате JSON или YAML.
+В случае с OpenAPI чаще придётся иметь дело с YAML.
+YAML расшифровывается как YAML Ain't Markup Language («YAML — не язык разметки»).
+YAML представляет собой формат описания данных, похожий на язык Python.
+-------------
+Итак, начнём разбираться с базового примера спецификации.
+
+openapi: 3.0.2
+info:
+  title: 'Some application'
+  version: "0.1"
+paths:
+  /schools/:
+    get:
+      operationId: listSchools
+      description: 'List of schools'
+      parameters: []
+      responses:
+        '200':
+          content:
+          application/json:
+            schema:
+              type: array
+              items:
+                  $ref: '#/components/schemas/School'
+          description: ''
+      tags:
+        - schools
+
+    post:
+      operationId: createSchool
+      description: 'Create school'
+      parameters: []
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/School'
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/School'
+          description: ''
+      tags:
+        - schools
+
+components:
+  schemas:
+    School:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          maxLength: 64
+      required:
+        - name
+-------------
+Разберём по частям.
+
+openapi: 3.0.2
+info:
+ title: 'Some application'
+ version: '0.1'
+описание версии OpenAPI.
+в категории info можно увидеть поля title и version.
+Описание и текущую версию нашего приложения.
+-------------
+paths:
+ /schools/:
+   get:
+     operationId: listSchools
+     description: 'List of schools'
+     parameters: []
+     responses:
+       '200':
+         content:
+           application/json:
+             schema:
+               type: array
+               items:
+                 $ref: '#/components/schemas/School'
+         description: ''
+     tags:
+     — schools
+
+Дальше идет группа paths со всеми возможными путями. В нашем примере
+мы ограничимся методами get и post для работы со школами
+В поле schema мы можем увидеть формат ответа. Тут мы видим, что отдаётся
+массив, а в его подполе items описание структуры этого массива, а именно
+ссылку на описание, которое мы увидим дальше.
+Категория tags — это просто список тегов, чтобы не заблудиться в огромном
+количестве всевозможных запросов.
+-------------
+post:
+     operationId: createSchool
+     description: 'Create school'
+     parameters: []
+     requestBody:
+       content:
+         application/json:
+           schema:
+             $ref: '#/components/schemas/School'
+     responses:
+       '201':
+         content:
+           application/json:
+             schema:
+               $ref: '#/components/schemas/School'
+         description: ''
+     tags:
+     - schools
+
+Главное отличие здесь в том, что у нас описан не только формат ответа, но и
+запроса. В данном случае формат запроса ссылается на тот же компонент
+'#/components/schemas/School', что мы использовали в качестве элемента списка,
+а затем используется.
+А еще в категории, как мы видим, код ответа в данном случае 201, ведь именно
+его принято отдавать, когда мы создали объект.
+-------------
+Теперь разберём описание структуры компонента.
+
+ schemas:
+   School:
+     type: object
+     properties:
+       id:
+         type: integer
+         readOnly: true
+       name:
+         type: string
+         maxLength: 64
+     required:
+     - name
+
+Тут мы видим описание того, что такое школа.
+
+Для начала мы видим, что тип школы — это объект, содержащий некоторые
+поля в properties.
+А поля эти — id и name. И как мы видим, только name обязательно требуется.
+Ведь когда мы создаём объект, мы ещё не знаем каким будет id.
+---------------------------------------
+Swagger
+
+Swagger позволят открывать файл OpenAPI спецификации, просматривать его в
+красивом интерфейсе и даже отправлять запросы на основе примеров.
+По сути, это просто несколько статических файлов, которые лежат на вашем или
+каком-то ещё сервере.
+-------------
+можно добавить следующий шаблон:
+
+<!DOCTYPE html>
+<html>
+ <head>
+   <title>Swagger</title>
+   <meta
+charset="utf-8"/>
+   <meta name="viewport" content="width=device-width, initial-scale=1">
+   <link rel="stylesheet" type="text/css" href="//unpkg.com/swagger-ui-dist@3/swagger-ui.css" />
+ </head>
+ <body>
+   <div id="swagger-ui"></div>
+   <script src="//unpkg.com/swagger-ui-dist@3/swagger-ui-bundle.js"></script>
+   <script>
+   const ui = SwaggerUIBundle({
+       url: "//lms-cdn.skillfactory.ru/assets/courseware/v1/a084991b3a1596be3ed570c65c56393c/asset-v1:SkillFactory+FPW-2.0+27AUG2020+type@asset+block/openapi-schema.yml",
+       dom_id: '#swagger-ui',
+       presets: [
+         SwaggerUIBundle.presets.apis,
+         SwaggerUIBundle.SwaggerUIStandalonePreset
+       ],
+       layout: "BaseLayout",
+       requestInterceptor: (request) => {
+         request.headers['X-CSRFToken'] = "{{ csrf_token }}"
+         return request;
+       }
+     })
+   </script>
+ </body>
+</html>
+-------------
+А нашу схему положим в /static/openapi-schema.yml.
+
+from django.views.generic import TemplateView
+
+urlpatterns = [
+   path('admin/', admin.site.urls),
+   path('swagger-ui/', TemplateView.as_view(
+       template_name='swagger-ui.html',
+       extra_context={'schema_url':'openapi-schema'}
+   ), name='swagger-ui'),
+   ...
+]
+-------------
+Перезапускаем сервер и заходим в браузере на
+http://localhost:8000/swagger-ui/.
+---------------------------------------
+Django REST Framework
+
+Django легко подчинить стихии REST. Для этого нужно использовать
+Django REST Framework, или как его называют многие разработчики DRF.
+Для максимально комфортной работы с REST необходимо установить DRF.
+
+pip install djangorestframework
+pip install markdown
+pip install django-filter
+-------------
+Так легко у нас установились Django REST Framework и ещё две крайне
+полезные библиотеки.
+-------------
+Для начала стоит показать, как выглядят модели в нашем приложении:
+
+from django.db import models
+
+class School(models.Model):
+   name = models.CharField(max_length=64, unique=True)
+   address = models.CharField(max_length=120)
+
+class SClass(models.Model):
+   grade = models.IntegerField()
+   school = models.ForeignKey(School, on_delete=models.CASCADE)
+
+class Student(models.Model):
+   name = models.CharField(max_length=64)
+   sclass = models.ForeignKey(SClass, on_delete=models.CASCADE)
+---------------------------------------
+нужно добавить Django REST Framework в список установленных приложений.
+
+В settings.py находим список INSTALLED_APPS и добавляем в него
+'rest_framework'.
+
+INSTALLED_APPS = [
+   .......
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.yandex',
+    'django_apscheduler',
+    'rest_framework',
+
+]
+-------------
+Следующий этап — добавить сериализаторы.
+Для этого в папке приложения создаём файл serializers.py
+
+from .models import *
+from rest_framework import serializers
+
+class SchoolSerializer(serializers.HyperlinkedModelSerializer):
+   class Meta:
+       model = School
+       fields = ['id', 'name', ]
+
+class SClassSerializer(serializers.HyperlinkedModelSerializer):
+   class Meta:
+       model = SClass
+       fields = ['id', 'grade', ]
+
+class StudentSerializer(serializers.HyperlinkedModelSerializer):
+   class Meta:
+       model = Student
+       fields = ['id', 'name', ]
+-------------
+Сериализаторы — это классы, которые описывают, по каким правилам модель
+может преобразовываться в данные и обратно. Сериализаторы чем-то похожи на
+формы в Django, но обладают более крутыми возможностями, такими как работа
+со вложенными данными.
+---------------------------------------
+файле views.py проекта добавить классы вьюсетов:
+
+from django.shortcuts import render
+from rest_framework import viewsets
+from rest_framework import permissions
+
+from education.serializers import *
+from education.models import *
+
+
+class SchoolViewset(viewsets.ModelViewSet):
+   queryset = School.objects.all()
+   serializer_class = SchoolSerializer
+
+
+class SClassViewset(viewsets.ModelViewSet):
+   queryset = SClass.objects.all()
+   serializer_class = SClassSerializer
+
+
+class StudentViewest(viewsets.ModelViewSet):
+   queryset = Student.objects.all()
+   serializer_class = StudentSerializer
+---------------------------------------
+Вьюсет в DRF это, по сути, тот же view на основе класса, что и обычно, просто
+у нас появилась возможность наследовать их от классов, предназначенных для
+работы с REST.
+Раз у нас есть несколько view, которые мы хотим показать, то мы должны
+зарегистрировать их в urls.py для доступа. в основной urls.py
+
+from rest_framework import routers
+from education import views
+
+
+router = routers.DefaultRouter()
+router.register(r'schools', views.SchoolViewset)
+router.register(r'classes', views.SClassViewset)
+router.register(r'students', views.StudentViewest)
+
+
+urlpatterns = [
+   path('admin/', admin.site.urls),
+   path('', include(router.urls)),
+   path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
+]
+-------------
+В данном примере мы для простоты не стали использовать слои, к тому же
+Django REST Framework «из коробки» его не поддерживает
+(но для желающих есть библиотека).
+https://github.com/SkillfactoryCoding/drf-nested-routers
+-------------
+Таким образом, у нас есть самый простой вариант RESTful-приложения. Вьюсеты
+сразу предоставляют реализацию метов GET, POST, PUT, PATCH, DELETE. А значит,
+нам не обязательно реализовывать их самостоятельно.
+Но что если мы хотим самостоятельно описать, что должно при этом происходить
+-------------
+Например мы можем добавить метод .list() в класс SchoolViews, чтобы он ничего
+не возвращал.
+-------------
+from django.shortcuts import render
+from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework import permissions
+
+from education.serializers import SchoolSerializer
+from education.models import School
+
+
+class SchoolViewset(viewsets.ModelViewSet):
+   queryset = School.objects.all()
+   serializer_class = SchoolSerializer
+   def list(self, request, format=None):
+       return Response([])
+---------------------------------------
+пример: во время удаления школы мы не хотим удалять её из базы, а хотим чтобы
+поле is_active получало значение False, и школа отсутствовала в любых списках.
+
+class School(models.Model):
+   name = models.CharField(max_length=64, unique=True)
+   address = models.CharField(max_length=120)
+   is_active = models.BooleanField(default=True)  # Добавим поле
+-------------
+Создаем и применяем миграцию:
+
+python manage.py makemigrations
+python manage.py migrate
+-------------
+И теперь мы можем его использовать в нашем обновлённом вьюсете:
+
+class SchoolViewset(viewsets.ModelViewSet):
+   queryset = School.objects.all().filter(is_active=True)
+   serializer_class = SchoolSerializer
+
+   def destroy(self, request, pk, format=None):
+       instance = self.get_object()
+       instance.is_active = False
+       instance.save()
+       return Response(status=status.HTTP_204_NO_CONTENT)
+-------------
+В данном случае нам не понадобилось переопределять метод .list(), ведь мы
+можем переопределить queryset.
+
+Метод .destroy() же в данном случае возвращает код HTTP_204_NO_CONTENT, ведь
+именно такое поведение является стандартным для rest_framework.
+
+Аналогично можно переопределить и методы .post(), .patch(), .put().
+
+А если мы хотим изначально определить все методы самостоятельно, то можно
+использовать в качестве базового класса rest_framework.viewsets.Model.
+---------------------------------------
+Фильтры
+-------------
+Это всё довольно классно. Но у нас возникает следующая проблема.
+Запрос GET /sudents нам отдаст всех учеников из всех школ и классов.
+Но и для этого случая есть готовое решение. Всё могло бы быть проще, если бы
+мы хотя бы указали школу, для которой мы ищем ученика.
+Для этого можем переопределить метод get_queryset внутри вьюсета:
+
+class StudentViewset(viewsets.ModelViewSet):
+   queryset = Student.objects.all()
+   serializer_class = StudentSerializer
+
+   def get_queryset(self):
+       queryset = Student.objects.all()
+       school_id = self.request.query_params.get('school_id', None)
+       sclass_id = self.request.query_params.get('class_id', None)
+       if school_id is not None:
+           queryset = queryset.filter(sclass__school_id=school_id)
+       if sclass_id is not None:
+           queryset = queryset.filter(sclass_id=sclass_id)
+       return queryset
+-------------
+Теперь, если мы зададим запрос вида GET localhost:8000/students?school_id=3,
+то получим список только тех учеников, которые учатся в школе с id=3. Помимо
+этого мы можем указать id класса GET localhost:8000/students?class_id=1.
+Выглядит круто, но даже этот код можно было бы и не писать. Ведь, как вы
+помните, с самого начала мы установили библиотеку django_filters.
+
+Перейдем к  SClassViewset и переделаем его следующим образом:
+
+class SClassViewset(viewsets.ModelViewSet):
+   queryset = SClass.objects.all()
+   serializer_class = SClassSerializer
+   filter_backends = [django_filters.rest_framework.DjangoFilterBackend]
+   filterset_fields = ["grade", "school_id"]
+
+Поле filter_backends позволяет нам использовать альтернативный фильтр-бэкенд
+или даже свой собственный, а поле filterset_fields указывает, по каким полям
+можно фильтровать.
+Теперь мы можем слать запросы вида GET localhost:8000/sclasses?school_id=3.
+Фильтры это очень круто, но что если мы всё же хотим получить доступ к списку
+всех учеников, но выгружать сразу весь список — не вариант.
+---------------------------------------
+Пагинация
+-------------
+К счастью в rest_framework уже есть инструмент для пагинации. И даже не нужно
+ставить другие библиотеки.
+Можно просто подключить его в settings.py:
+
+REST_FRAMEWORK = {
+   'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+   'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+   'PAGE_SIZE': 10
+}
+-------------
+Теперь стоит нам послать запрос вида GET localhost:8000/students,
+мы получим следующий ответ:
+{
+   "count": 26877,
+   "next": "http://localhost:8000/students/?limit=10&offset=10",
+   "previous": null,
+   "results": [...]
+}
+-------------
+Таким образом, наша выдача переместилась в атрибут results, а также  появились
+поля count с количеством результатов, а поля next и previous содержат ссылки
+на следующую и предыдущую страницы, если они есть.
+Как видим в next используются query-параметры:
+
+• limit — это то, сколько элементов нужно показать в одном запросе, если не
+    указывать, то он будет считаться равным 0;
+• offset — сколько элементов пропустить в нашем ответе. Если не указывать, то
+    берётся значение 'PAGE_SIZE', которое мы указывали в settings.py
+---------------------------------------
+Публичный и приватный API
+-------------
+В ходе нашего обучения все методы, с которыми мы работали были доступны для
+всех желающих без каких-либо проверок.
+    А это вообще не дело.
+Для того чтобы ограничить доступ в rest_framework есть механизм пермиссий.
+Их мы можем определить как для всего приложения в целом, так и для отдельных
+view и viewset.
+Если мы снова изменим в settings.py переменную REST_FRAMEWORK, то сможем
+задать единый стандарт для прав доступа для всех viewset.
+-------------
+REST_FRAMEWORK = {
+   'DEFAULT_FILTER_BACKENDS': ['django_filters.rest_framework.DjangoFilterBackend'],
+   'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+   'PAGE_SIZE': 10,
+   'DEFAULT_PERMISSION_CLASSES': [
+       'rest_framework.permissions.IsAuthenticated',
+   ]
+
+}
+-------------
+Теперь все наши запросы по умолчанию будут доступны только авторизованным
+пользователям.
+Но если вы предпочли бы иметь больше контроля, то можно и не добавлять
+DEFAULT_PERMISSION_CLASSES, а добавлять их в каждый конкретный viewset.
+Например, добавив поле permission_classes в StudentViewset:
+
+class StudentViewset(viewsets.ModelViewSet):
+   queryset = Student.objects.all()
+   serializer_class = StudentSerializer
+   permission_classes = [permissions.IsAuthenticated]
+   def get_queryset(self):
+       queryset = Student.objects.all()
+       school_id = self.request.query_params.get('school_id', None)
+       sclass_id = self.request.query_params.get('sclass_id', None)
+       if school_id is not None:
+           queryset = queryset.filter(sclass__school_id=school_id)
+       if sclass_id is not None:
+           queryset = queryset.filter(sclass_id=sclass_id)
+       return queryset
+-------------
+ВАЖНО: permission_classes переопределяет стандартное значение в
+DEFAULT_PERMISSION_CLASSES, а значит, если мы хотим отменить, то достаточно
+переопределить как permission_classes=[permissions.AllowAny] или вообще
+permission_classes=[].
+
+Теперь, когда у нас включена проверка авторизации, для всех неавторизованных
+пользователей будет возвращена ошибка HTTP 403 Forbidden, и это правильно.
+
+Если хотите почитать про права доступа от авторов самого фреймворка, то можете
+почитать эту статью.Permissions - Django REST framework
+https://www.django-rest-framework.org/api-guide/permissions/
+---------------------------------------
+Что случится, если мы определим сразу и DEFAULT_PERMISSION_CLASSES,
+и permission_classes во вьюсете?
+Применятся только те, что присутствуют в permission_classes
+---------------------------------------
+Куда стоит добавить метод get_queryset, чтобы он корректно работал и
+помогал отфильтровывать данные?
+       Во вьюсет
+---------------------------------------
+Чем отличается модель OSI от REST?
+    REST нужен для веба, а модель OSI описывает сетевое взаимодействие в
+    принципе.
+---------------------------------------
+Если я хочу добавить поддержку REST в проект на Django, то я должен:
+    Установить rest_framework, добавить его как приложение, описать вьюсеты,
+сериалайзеры и другие сущности, которые могут нам пригодится.
+==============================================================================
+D_16
+==============================================================================
 
 ---------------------------------------
 

@@ -18,9 +18,22 @@ from django.contrib import admin
 from django.urls import path, include
 from simpleapp.views import multiply
 from django.conf.urls.i18n import i18n_patterns
+from django.views.generic import TemplateView
+from rest_framework import routers
+from simpleapp import views
+
+
+router = routers.DefaultRouter()
+router.register(r'product', views.ProductViewset)
+router.register(r'category', views.CategoryViewset)
+# router.register(r'subscriptions', views.SubscriptionsViewset)
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('swagger-ui/', TemplateView.as_view(
+        template_name='swagger-ui.html',
+        extra_context={'schema_url': 'openapi-schema'}), name='swagger-ui'),
     path('pages/', include('django.contrib.flatpages.urls')),
     # Делаем так, чтобы все адреса из нашего приложения (simpleapp/urls.py)
     # подключались к главному приложению с префиксом products/.
@@ -30,6 +43,8 @@ urlpatterns = [
     # path('accounts/', include('accounts.urls')),  # Добавил
     path('accounts/', include('allauth.urls')),
     path('i18n/', include('django.conf.urls.i18n')),
+    path('', include(router.urls)),
+    path('api-auth/', include('rest_framework.urls', namespace='rest_framework'))
 ]
 # urlpatterns += i18n_patterns(
 #     path('', include('basic.urls'))
