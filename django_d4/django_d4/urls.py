@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from simpleapp.views import multiply
+from simpleapp.views import multiply, ProductsList
 from django.conf.urls.i18n import i18n_patterns
 from django.views.generic import TemplateView
 from rest_framework import routers
@@ -30,6 +30,8 @@ router.register(r'category', views.CategoryViewset)
 
 
 urlpatterns = [
+    # path(r'^', include('polls.urls')), admin/
+    path('', ProductsList.as_view(), name='product_list'),
     path('admin/', admin.site.urls),
     path('swagger-ui/', TemplateView.as_view(
         template_name='swagger-ui.html',
