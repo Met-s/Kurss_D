@@ -11,8 +11,10 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
-from config import email_host_password
+# from config import email_host_password
+from dotenv import load_dotenv
 
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -177,18 +179,18 @@ ACCOUNT_FORMS = {"signup": "accounts.forms.CustomSignupForm"}
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 465
-EMAIL_HOST_USER = "si-mart"
-EMAIL_HOST_PASSWORD = email_host_password
+EMAIL_HOST_USER = os.getenv("email_host_user")
+EMAIL_HOST_PASSWORD = os.getenv("email_host_password")
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
-DEFAULT_FROM_EMAIL = "si-mart@yandex.ru"
+DEFAULT_FROM_EMAIL = os.getenv("default_from_email")
 EMAIL_SUBJECT_PREFIX = "DORATY : "
 
-ADMINS = [("AdminSi", "si-mart@yandex.ru")]
-SERVER_EMAIL = "si-mart@yandex.ru"
+ADMINS = [("AdminSi", os.getenv("admins"))]
+SERVER_EMAIL = os.getenv("server_email")
 MANAGERS = (
-    ('Ivan', 'feronts@mail.ru'),
-    ('Petr', 'matveykey@mail.ru'),
+    ('Ivan', os.getenv('manager_ivan')),
+    ('Petr', os.getenv('matveykey@mail.ru')),
 )
 # Celory Веб
 # redis://default:47PifD0CqCN5DyOyDP32pWbItetYBwnD@redis-11393.c304.europe-west1-2.gce.cloud.redislabs.com:11393
