@@ -2,7 +2,7 @@ from allauth.account.forms import SignupForm
 from django.core.mail import mail_managers
 
 
-class CustomSignupForm(SignupForm):
+class CustomSignUpForm(SignupForm):
     def save(self, request):
         user = super().save(request)
 

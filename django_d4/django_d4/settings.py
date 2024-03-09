@@ -190,7 +190,7 @@ ADMINS = [("AdminSi", os.getenv("admins"))]
 SERVER_EMAIL = os.getenv("server_email")
 MANAGERS = (
     ('Ivan', os.getenv('manager_ivan')),
-    ('Petr', os.getenv('matveykey@mail.ru')),
+    ('Petr', os.getenv('manager_petr')),
 )
 # Celory Веб
 # redis://default:47PifD0CqCN5DyOyDP32pWbItetYBwnD@redis-11393.c304.europe-west1-2.gce.cloud.redislabs.com:11393
